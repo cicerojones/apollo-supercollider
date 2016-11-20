@@ -1,0 +1,44 @@
+* A Master File for coordinating work on Incarnation Audio
+  :PROPERTIES:
+  :ID:       BEA8AB7C-31AC-47F6-AA7A-FF7907120B64
+  :END:
+** rationale
+Since I will be or have been using:
+
+- audacity
+- pure data
+- supercollider
+- overtone
+
+I will be generating a range of files and data, especially considering
+I am using two computers (at least!) to develop with.
+
+Thus, aside from requiring smart, skillful and efficient git/github
+usage, I also just need to be very clear about what is where.
+** workflow
+One pattern has been:
+
+- record some (large) audio files with Audacity
+- open pd to test out some simple concepts
+- look at supercollider documentation and tutorials to lay a
+  foundation for translating
+- generate my own documentation based on extracts from existing sc
+  tutorial files (primarily in org-mode)
+** where are things?
+
+- for large sound files from Audacity
+
+/Users/a/Music/Audio_Projects 
+
+- shared audio resources should go in
+
+[[file:~/Dropbox/MUSIC/][file:~/Dropbox/MUSIC/]]
+
+- general Supercollider tutorial work and documentation:
+
+[[file:~/Dropbox/AB-local/Documents-new-home/supercollider-files/][file:~/Dropbox/AB-local/Documents-new-home/supercollider-files/]]
+
+- messy files for figuring out things specifically for this project
+  (not to be preserved necessarily) aka SANDBOX--this directory:
+
+[[file:][file:~/Github-repos/apollo-supercollider/]]
