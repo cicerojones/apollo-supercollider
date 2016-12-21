@@ -94,8 +94,8 @@ Yancey buffer must be loaded as buffer 1 (below)
 #+END_SRC
 ** using centerpos arguments and trate arguments wisely!
 #+BEGIN_SRC clojure :results silent
-[centerpos-mouse (mouse-x:kr 0 (buf-dur:kr b))
-[centerpos-line  (line 0 (buf-dur:kr 0) 500) 
+[centerpos-mouse (mouse-x:kr 0 (buf-dur:kr b))]
+[centerpos-line  (line 0 (buf-dur:kr 0) 500) ]
 #+END_SRC
 ** add cc control to t-grains (trate with CC, pos with Mouse-x
 #+BEGIN_SRC clojure
@@ -145,10 +145,8 @@ Why does the handler function take a "10" as an argument
 (remove-event-handler ::cc-grainyctl)
 #+END_SRC
 
-** complicated example using atoms
-
 ** make abstraction for playing with CC and granular synth
-*** define atomsfor two sets of channels and CC messages
+*** define atoms for two sets of channels and CC messages
 #+BEGIN_SRC clojure :results silent
   (def cc1-1 (atom 0))
   (def cc2-1 (atom 0))
@@ -182,7 +180,6 @@ Why does the handler function take a "10" as an argument
 #+END_SRC
 
 *** build large event handler
-
 **** hide largest (respond to channel 1 or other)
 #+BEGIN_SRC clojure :results silent
   (on-event [:midi :control-change]
@@ -213,10 +210,16 @@ Why does the handler function take a "10" as an argument
 
 **** view current state
 #+BEGIN_SRC clojure :results silent
-(list @cc1-1 @cc2-1 @cc3-1 @cc4-1 @cc5-1 @cc6-1 @cc7-1 @cc8-1 @cc1-2 @cc2-2 @cc3-2 @cc4-2 @cc5-2 @cc6-2 @cc7-2 @cc8-2))
+(list 'Channel-one  @cc1-1 @cc2-1 @cc3-1 @cc4-1 @cc5-1 @cc6-1 @cc7-1 @cc8-1 'Channel-two @cc1-2 @cc2-2 @cc3-2 @cc4-2 @cc5-2 @cc6-2 @cc7-2 @cc8-2))
 #+END_SRC
 
-**** 
+
+
+#+BEGIN_SRC clojure :results silent
+(str "cc1-1: " @cc1-1 " cc2-1: " @cc2-1 " cc3-1: " @cc3-1 " cc4-1: " @cc4-1 " cc5-1: " @cc5-1 " cc6-1: " @cc6-1 " cc7-1: " @cc7-1 " cc8-1: " \n @cc8-1 " cc1-2: " @cc1-2 @cc2-2 @cc3-2 @cc4-2 @cc5-2 @cc6-2 @cc7-2 @cc8-2))
+#+END_SRC
+
+**** println CC-knob values and assign to slow-grain-reverb parameters
 #+BEGIN_SRC clojure
     (on-event [:midi :control-change]
               (fn [{cc-channel :note val :velocity chan :channel}]
@@ -266,7 +269,7 @@ Why does the handler function take a "10" as an argument
 (remove-event-handler ::large-cc-state)
 #+END_SRC
 
-**** use reset! and ctl on a noise synth
+**** example of using reset! and ctl on a noise synth
 #+BEGIN_SRC clojure :results silent
 
     (on-event [:midi :control-change]
@@ -280,7 +283,7 @@ Why does the handler function take a "10" as an argument
 
 #+END_SRC
 
-** abstraction template
+* abstraction template GOOD
 #+BEGIN_SRC clojure :results silent
 (defn make-synth-ctl [synth midi-channel synth-param]
   (fn [{cc-channel :note val :velocity chan :channel}]
@@ -295,33 +298,136 @@ Why does the handler function take a "10" as an argument
 
 (slow-grain-reverb)
 #+END_SRC
-* relevant apollo and incarnations soundfiles
 
-** directories
-[[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/]]
-[[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/]]
-[[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/apollo-tracks/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/apollo-tracks/]]
-** supercollider Buffer.read en masse
+#+BEGIN_SRC clojure
+(remove-event-handler ::abstraction-cc-synth)
+#+END_SRC
+
+#+RESULTS:
+: :handler-removed
+
+* supercollider granular synth
+
+** examples to overtone
+*** supercollider TGrain examples
+#+END_SRC
+
+#+BEGIN_SRC sclang 
+  b = Buffer.read(s, Platform.resourceDir +/+ "sounds/full-time-mono.wav");
+#+END_SRC
+
+#+BEGIN_SRC sclang 
+  //   ~variation1 = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/apollo-variation1-mono.wav");
+    b = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/apollo-variation1-mono.wav");
+#+END_SRC
+#+COMMENT change /clk/=Dust, dur= 4 / trate
+*** uses dust!
+#+BEGIN_SRC sclang :tangle "~/Documents/working-directory/apollosc.sc"
+  (
+  {
+          var trate, dur, clk, pos, pan;
+          trate = MouseY.kr(8,120,1);
+          dur = 4 / trate;
+          clk = Dust.kr(trate);
+          pos = MouseX.kr(0,BufDur.kr(b)) + TRand.kr(0, 0.01, clk);
+          pan = WhiteNoise.kr(0.6);
+          TGrains.ar(2, clk, b, 1, pos, dur, pan, 1);
+  }.play;
+  )
+#+END_SRC
+*** some flanging
+#+COMMENT change /trate/= depends on MouseY and some Triangle+Lin regularity
+#+BEGIN_SRC sclang :tangle "~/Documents/working-directory/apollosc.sc"
+  (
+  {
+          var trate, dur, clk, pos, pan;
+          trate = LinExp.kr(LFTri.kr(MouseY.kr(0.1,2,1)),-1,1,8,120);
+          dur = 12 / trate;
+          clk = Impulse.ar(trate);
+          pos = MouseX.kr(0,BufDur.kr(b));
+          pan = WhiteNoise.kr(0.6);
+          TGrains.ar(2, clk, b, 1, pos, dur, pan, 1);
+  }.play;
+  )
+#+END_SRC
+*** TRand on centerpos makes more natural grains
+#+COMMENT change /dur/= small sensitive to MouseY
+#+BEGIN_SRC sclang :tangle "~/Documents/working-directory/apollosc.sc"
+  (
+  {
+          var trate, dur, clk, pos, pan;
+          trate = 12;
+          dur = MouseY.kr(0.2,24,1) / trate;
+          clk = Impulse.kr(trate);
+          pos = MouseX.kr(0,BufDur.kr(b)) + TRand.kr(0, 0.01, clk);
+          pan = WhiteNoise.kr(0.6);
+          TGrains.ar(2, clk, b, 1, pos, dur, pan, 1);
+  }.play;
+  )
+#+END_SRC
+*** non Mouse controlled
+#+COMMENT change /pos/= BrownNoise sensitive, jumping around (with Integrator.kr)
+#+BEGIN_SRC sclang :tangle "~/Documents/working-directory/apollosc.sc"
+  (
+  {
+          var trate, dur, clk, pos, pan;
+          trate = 100;
+          dur = 8 / trate;
+          clk = Impulse.kr(trate);
+          pos = Integrator.kr(BrownNoise.kr(0.001));
+          pan = WhiteNoise.kr(0.6);
+          TGrains.ar(2, clk, b, 1, pos, dur, pan, 0.5);
+  }.play;
+  )
+#+END_SRC
+*** [#A] use TGrain playback rate with randomness to skew pitch etc (long grains overlap)
+#+COMMENT change /rate/= dependent on exponential whitenoise
+#+BEGIN_SRC sclang :tangle "~/Documents/working-directory/apollosc.sc"
+  (
+  {
+          var trate, dur, clk, pos, pan;
+          trate = MouseY.kr(1,400,1);
+          dur = 8 / trate;
+          clk = Impulse.kr(trate);
+          pos = MouseX.kr(0,BufDur.kr(b));
+          pan = WhiteNoise.kr(0.8);
+          TGrains.ar(2, clk, b, 2 ** WhiteNoise.kr(2), pos, dur, pan, 1);
+  }.play;
+  )
+#+END_SRC
+*** change pitch with Playback--shorter single grains
+#+COMMENT change /pos/ WhiteNoise, /center pos/=Xmouse sensitive,
+# /pan/=White Noise
+#+BEGIN_SRC sclang :tangle "~/Documents/working-directory/apollosc.sc"
+  (
+  {
+          var trate, dur;
+          trate = MouseY.kr(2,120,1);
+          dur = 1.2 / trate;
+          TGrains.ar(2, Impulse.ar(trate), b, (1.2 ** WhiteNoise.kr(3).round(1)), MouseX.kr(0,BufDur.kr(b)), dur, WhiteNoise.kr(0.6), 1);
+  }.play;
+  )
+#+END_SRC
+** manipulating best of sc Gran examples
 #+BEGIN_SRC sclang
-  ~variation1 = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/apollo-variation1-mono.wav");
-  ~variation2 = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/apollo-variation2-mono.wav");
-  ~yancey = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/how-long-slowest-mono.wav");
-  ~goldberg = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/goldberg-slow-mono.wav");
-  ~apotheose = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/apotheose-mono.wav");
-  ~calliope = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/calliope-mono.wav");
-  ~coda = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/coda-mono.wav");
-  ~yancey = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/how-long-slowest-mono.wav");
-  ~naissance = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/naissance-mono.wav");
-  ~action = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/pas-d'action-mono.wav");
-  ~deux = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/pas-de-deux-mono.wav");
-  ~poly = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/polymnie-mono.wav");
-  ~terpsichore = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/terpsichore-mono.wav");
+(
+{
+        var trate, dur, clk, pos, pan;
+        trate = MouseY.kr(1,400,1);
+        dur = 8 / trate;
+        clk = Impulse.kr(trate);
+        pos = MouseX.kr(0,BufDur.kr(b));
+        pan = WhiteNoise.kr(0.8);
+        TGrains.ar(2, clk, b, 1, pos, dur, pan, 1);
+}.play;
+)
+
 #+END_SRC
 
 * translate goldberg and yancey to overtone
 ** load buffers for incarnation
 #+BEGIN_SRC clojure
-(def yancey (load-sample "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/how-long-slowest-mono.wav")
+(def yancey (load-sample "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/how-long-slowest-mono.wav"))
 #+END_SRC
 
 #+RESULTS:
@@ -394,3 +500,26 @@ Basic playback of a loaded buffer
 
     i = Synth(\goldberg_synth);
 #+END_SRC
+
+* relevant apollo and incarnations soundfiles
+** directories
+[[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/]]
+[[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/]]
+[[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/apollo-tracks/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/apollo-tracks/]]
+** supercollider Buffer.read en masse
+#+BEGIN_SRC sclang
+  ~variation1 = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/apollo-variation1-mono.wav");
+  ~variation2 = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/apollo-variation2-mono.wav");
+  ~yancey = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/how-long-slowest-mono.wav");
+  ~goldberg = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/goldberg-slow-mono.wav");
+  ~apotheose = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/apotheose-mono.wav");
+  ~calliope = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/calliope-mono.wav");
+  ~coda = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/coda-mono.wav");
+  ~yancey = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/how-long-slowest-mono.wav");
+  ~naissance = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/naissance-mono.wav");
+  ~action = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/pas-d'action-mono.wav");
+  ~deux = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/pas-de-deux-mono.wav");
+  ~poly = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/polymnie-mono.wav");
+  ~terpsichore = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/terpsichore-mono.wav");
+#+END_SRC
+
