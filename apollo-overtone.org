@@ -1,0 +1,362 @@
+* stop all sound
+#+BEGIN_SRC clojure
+(stop)
+#+END_SRC
+
+#+RESULTS:
+: nil
+
+* use granular synthesis on goldberg variation
+** make sure buffer was loaded
+#+BEGIN_SRC clojure
+(def goldberg-slow (load-sample "/Users/b/Google Drive/Audio_uploads/wav-file-uploads/goldberg-slow-mono.wav"))
+#+END_SRC
+
+#+RESULTS:
+: #'user/goldberg-slow
+
+
+#+BEGIN_SRC clojure :results silent
+(definst gran [] (play-buf 1 goldberg-slow))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(gran)
+#+END_SRC
+** test out mouse-controlled granular synth buffer playback
+#+BEGIN_SRC clojure :results silent
+(definst grainy [b 0] (let [
+                         trate (mouse-y:kr 1 30)
+                         dur (/ 2 trate)]
+                        (t-grains:ar 1 (impulse:ar trate) b 1 (mouse-x:kr 0 (buf-dur:kr b)) dur 0 0.8 2)))
+
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(grainy gran-buf)
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(definst slow-grain2 [b 0] 
+(t-grains:ar 1 (impulse:ar 0.5) b 1 (line 0 (buf-dur:kr 0) 600) 2 0 0.8 4))
+
+(slow-grain2)
+
+
+#+END_SRC
+** audition full goldberg and yancey played back granularly
+#+BEGIN_SRC clojure :results silent
+;; #<buffer-info: 184.540590s mono 0>
+
+  (definst slow-grain-reverb [b 0] 
+    (free-verb
+     (t-grains:ar 1 ;; num-channel
+                  (impulse:ar 0.5) ;; trigger
+                  b ;; bufnum
+                  1 ;; rate
+                  (line 0 (buf-dur:kr 0) 378) ;; centerpos--'dur' of line is big!
+                  0.5 ;; dur
+                  0 ;; pan
+                  1 ;; amp
+                  2 ;; interp
+                  )
+               :mix 0.2
+               :damp 0.1
+               :room 0.9))
+
+  (slow-grain-reverb)
+#+END_SRC
+
+#+RESULTS:
+: #<instrument: slow-grain-reverb>#<synth-node[loading]: user/slow-grain-reverb 54>
+
+Yancey buffer must be loaded as buffer 1 (below)
+#+BEGIN_SRC clojure :results silent
+;; #<buffer-info: 272.938163s mono 1>
+
+  (definst slow-grain-reverb-yancey [b 1] 
+    (free-verb
+     (t-grains:ar 1 ;; num-channel
+                  (impulse:ar 0.30) ;; trigger
+                  b ;; bufnum
+                  1 ;; rate
+                  (line 0 (buf-dur:kr 0) 500) ;; centerpos--'dur' of line is big!
+                  2 ;; dur
+                  0 ;; pan
+                  0.6 ;; amp
+                  1 ;; interp
+                  )
+               :mix 0.5
+               :damp 0.1
+               :room 0.9))
+
+  (slow-grain-reverb-yancey)
+#+END_SRC
+** using centerpos arguments and trate arguments wisely!
+#+BEGIN_SRC clojure :results silent
+[centerpos-mouse (mouse-x:kr 0 (buf-dur:kr b))
+[centerpos-line  (line 0 (buf-dur:kr 0) 500) 
+#+END_SRC
+** add cc control to t-grains (trate with CC, pos with Mouse-x
+#+BEGIN_SRC clojure
+  (definst grainy-ctl [b 0 trate 1 amp 0.8 centerpos 0]
+    (let [trate trate
+          dur (/ 2 trate)
+          centerpos (mouse-x:kr 0 (buf-dur:kr b))]
+      (t-grains:ar 1
+                   (impulse:ar trate)
+                   b
+                   1
+                   centerpos
+                   dur
+                   0
+                   amp
+                   2)))
+
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(grainy-ctl :trate 0.4)
+#+END_SRC
+
+#+RESULTS:
+
+#+BEGIN_SRC clojure
+(ctl grainy-ctl :trate 0.1)
+#+END_SRC
+
+#+RESULTS:
+: #overtone.studio.inst.Inst{:name "grainy-ctl", :params ({:name "b", :default 0.0, :rate :kr, :value #atom[0.0 0x1e0a3174]} {:name "trate", :default 1.0, :rate :kr, :value #atom[1.0 0x6910250b]} {:name "amp", :default 0.8, :rate :kr, :value #atom[0.8 0x167d5ce5]}), :args ("b" "trate" "amp"), :sdef {:name "user/grainy-ctl", :constants [0.0 2.0 1.0 21.0 0.2], :params (0.0 1.0 0.8), :pnames ({:name "b", :index 0} {:name "trate", :index 1} {:name "amp", :index 2}), :ugens ({:args nil, :special 0, :name "Control", :rate 1, :inputs (), :rate-name :kr, :n-outputs 3, :id 353, :outputs ({:rate 1} {:rate 1} {:rate 1}), :n-inputs 0} #<sc-ugen: binary-op-u-gen:kr [1]> #<sc-ugen: buf-dur:kr [1]> #<sc-ugen: mouse-x:kr [2]> #<sc-ugen: impulse:ar [1]> #<sc-ugen: t-grains:ar [9]> #<sc-ugen: out:ar [10]>)}, :group #<synth-group[live]: Inst grainy-ctl Container 65>, :instance-group #<synth-group[live]: Inst grainy-ctl 66>, :fx-group #<synth-group[live]: Inst grainy-ctl FX 67>, :mixer #<synth-node[live]: overtone.stu547/mono-inst-mixer 68>, :bus #<audio-bus: No Name, mono, id 21>, :fx-chain [], :volume #atom[1.0 0x11385b98], :pan #atom[0.0 0x5c930bd3], :n-chans 1}
+
+Why does the handler function take a "10" as an argument
+
+#+BEGIN_SRC clojure
+  (on-event [:midi :control-change]
+            (fn [{cc-channel :note velocity :velocity}]
+              (ctl grainy-ctl :trate (scale-range velocity 1 127 0.1 3)) 10)
+            ::cc-grainyctl)
+#+END_SRC
+
+#+RESULTS:
+: :added-async-handler
+
+
+#+BEGIN_SRC clojure
+(remove-event-handler ::cc-grainyctl)
+#+END_SRC
+
+** complicated example using atoms
+
+** 
+*** define atomsfor two sets of channels and CC messages
+#+BEGIN_SRC clojure :results silent
+  (def cc1-1 (atom 0))
+  (def cc2-1 (atom 0))
+  (def cc3-1 (atom 0))
+  (def cc4-1 (atom 0))
+  (def cc5-1 (atom 0))
+  (def cc6-1 (atom 0))
+  (def cc7-1 (atom 0))
+  (def cc8-1 (atom 0))
+  (def cc1-2 (atom 0))
+  (def cc2-2 (atom 0))
+  (def cc3-2 (atom 0))
+  (def cc4-2 (atom 0))
+  (def cc5-2 (atom 0))
+  (def cc6-2 (atom 0))
+  (def cc7-2 (atom 0))
+  (def cc8-2 (atom 0))
+#+END_SRC
+
+*** Confirm current channel number
+#+BEGIN_SRC clojure :results silent
+  (on-event [:midi :control-change]
+            (fn [{cc-channel :note val :velocity chan :channel}]
+            (if (= chan 1) (println chan) (println chan))
+             )
+::cc-state-if)
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(remove-event-handler ::cc-state-if)
+#+END_SRC
+
+*** build large event handler
+
+**** hide largest (respond to channel 1 or other)
+#+BEGIN_SRC clojure :results silent
+  (on-event [:midi :control-change]
+            (fn [{cc-channel :note val :velocity chan :channel}]
+              (if (= chan 1)
+                (cond (= cc-channel 1) (reset! cc1-1 val)
+                      (= cc-channel 2) (reset! cc2-1 val)
+                      (= cc-channel 3) (reset! cc3-1 val)
+                      (= cc-channel 4) (reset! cc4-1 val)
+                      (= cc-channel 5) (reset! cc5-1 val)
+                      (= cc-channel 6) (reset! cc6-1 val)
+                      (= cc-channel 7) (reset! cc7-1 val)
+                      (= cc-channel 8) (reset! cc8-1 val)
+                      )
+                (cond (= cc-channel 1) (reset! cc1-2 val)
+                      (= cc-channel 2) (reset! cc2-2 val)
+                      (= cc-channel 3) (reset! cc3-2 val)
+                      (= cc-channel 4) (reset! cc4-2 val)
+                      (= cc-channel 5) (reset! cc5-2 val)
+                      (= cc-channel 6) (reset! cc6-2 val)
+                      (= cc-channel 7) (reset! cc7-2 val)
+                      (= cc-channel 8) (reset! cc8-2 val)
+                      )))
+              ::large-cc-state)
+          
+          
+#+END_SRC
+
+**** view current state
+#+BEGIN_SRC clojure :results silent
+(list @cc1-1 @cc2-1 @cc3-1 @cc4-1 @cc5-1 @cc6-1 @cc7-1 @cc8-1 @cc1-2 @cc2-2 @cc3-2 @cc4-2 @cc5-2 @cc6-2 @cc7-2 @cc8-2))
+#+END_SRC
+
+**** 
+#+BEGIN_SRC clojure
+    (on-event [:midi :control-change]
+              (fn [{cc-channel :note val :velocity chan :channel}]
+                (if (= chan 1)
+                  (cond (= cc-channel 1) (do (reset! cc1-1 (+ 1 (* val @cc5-1)))
+                                             (ctl slow-grain-reverb :centerpos @cc1-1))
+                        (= cc-channel 2) (do (reset! cc2-1 (+ 1 (* val @cc6-1)))
+                                             (ctl slow-grain-reverb :centerpos @cc2-1))
+                        (= cc-channel 3) (do (reset! cc3-1 (+ 1 (* val @cc7-1)))
+                                             (ctl slow-grain-reverb :centerpos @cc3-1))
+                        (= cc-channel 4) (do (reset! cc4-1 (+ 1 (* val @cc8-1)))
+                                             (ctl slow-grain-reverb :centerpos @cc4-1))
+                        (= cc-channel 5) (reset! cc5-1 val)
+                        (= cc-channel 6) (reset! cc6-1 val)
+                        (= cc-channel 7) (reset! cc7-1 val)
+                        (= cc-channel 8) (reset! cc8-1 val)
+                        )))              
+  ::interdependent-knobs)
+  ;; pseudo-code
+
+
+#+END_SRC
+
+#+RESULTS:
+: :added-async-handler
+
+#+BEGIN_SRC clojure :results silent
+(remove-event-handler ::large-cc-state)
+#+END_SRC
+
+**** use reset! and ctl on a noise synth
+#+BEGIN_SRC clojure :results silent
+
+    (on-event [:midi :control-change]
+              (fn [{cc-channel :note vel :velocity}]
+                (cond (= cc-channel 1) (do (reset! ffl (/ vel 127 )) 
+                                           (ctl someother-fnoise :vol   (scale-range vel 1 127 0 1)))
+                      (= cc-channel 2) (do (reset! ffh (* vel 10))
+                                           (ctl someother-fnoise :ffreq (scale-range vel 1 127 @ffl @ffh)))
+                      ))
+              ::someother-pooper-do)
+
+#+END_SRC
+
+* relevant apollo and incarnations soundfiles
+
+** directories
+[[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/]]
+[[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/]]
+[[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/apollo-tracks/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/apollo-tracks/]]
+** supercollider Buffer.read en masse
+#+BEGIN_SRC sclang
+  ~variation1 = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/apollo-variation1-mono.wav");
+  ~variation2 = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/apollo-variation2-mono.wav");
+  ~yancey = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/how-long-slowest-mono.wav");
+  ~goldberg = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/goldberg-slow-mono.wav");
+  ~apotheose = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/apotheose-mono.wav");
+  ~calliope = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/calliope-mono.wav");
+  ~coda = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/coda-mono.wav");
+  ~yancey = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/how-long-slowest-mono.wav");
+  ~naissance = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/naissance-mono.wav");
+  ~action = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/pas-d'action-mono.wav");
+  ~deux = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/pas-de-deux-mono.wav");
+  ~poly = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/polymnie-mono.wav");
+  ~terpsichore = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/terpsichore-mono.wav");
+#+END_SRC
+
+* translate goldberg and yancey to overtone
+** load buffers for incarnation
+#+BEGIN_SRC clojure
+(def yancey (load-sample "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/how-long-slowest-mono.wav")
+#+END_SRC
+
+#+RESULTS:
+
+Basic playback of a loaded buffer
+
+#+BEGIN_SRC clojure :results silent
+(definst gran-some-buf [bufname 0] (play-buf 1 bufname))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(gran-some-buf yancey)
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(gran-some-buf goldberg-slow)
+#+END_SRC
+
+#+BEGIN_SRC clojure
+(buffer-info goldberg-slow)
+#+END_SRC
+
+#+BEGIN_SRC clojure
+(buffer-info yancey)
+#+END_SRC
+** supercollider version
+#+BEGIN_SRC sclang
+  (
+    // add buffer argument
+    SynthDef(\yancey_synth,
+        {
+            arg trate = 2,
+            dur = 2,
+            centerpos = 1000,
+            // buffer = ~yancey.bufnum,
+            buffer = 7,
+            amp = 0.5;
+            Out.ar(0, TGrains.ar(2, Impulse.ar(trate), buffer, 1, centerpos, dur, 0, amp, 2))
+        }).add;
+    );
+
+  (
+    // add buffer argument
+    SynthDef(\goldberg_synth,
+        {
+            arg trate = 2,
+            dur = 2,
+            centerpos = 1000,
+            // buffer = ~goldberg.bufnum,
+            buffer = 3, 
+            amp = 0.5;
+            Out.ar(0, TGrains.ar(2, Impulse.ar(trate), buffer, 1, centerpos, dur, 0, amp, 2))
+        }).add;
+    );
+
+// broadcasting on channel 4 
+    MIDIdef.cc(\yancey_TRate, {arg args; h.set(\trate, args / 127)}, 1, 4);
+    MIDIdef.cc(\yancey_Dur, {arg args; h.set(\dur, args * 0.5)}, 2, 4);
+
+    MIDIdef.cc(\yancey_Center, {arg args; h.set(\centerpos, args * 1000)}, 3, 4);
+    MIDIdef.cc(\yancey_Amp, {arg args; h.set(\amp, args / 127)}, 4, 4);
+
+    MIDIdef.cc(\goldberg_TRate, {arg args; i.set(\trate, args / 127)}, 5, 4);
+    MIDIdef.cc(\goldberg_Dur, {arg args; i.set(\dur, args * 0.5)}, 6, 4);
+
+    MIDIdef.cc(\goldberg_Center, {arg args; i.set(\centerpos, args * 1000)}, 7, 4);
+    MIDIdef.cc(\goldberg_Amp, {arg args; i.set(\amp, args / 127)}, 8, 4);
+
+    h = Synth(\yancey_synth);
+
+    i = Synth(\goldberg_synth);
+#+END_SRC
