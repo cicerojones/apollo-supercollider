@@ -1,0 +1,90 @@
+#    -*- mode: org -*-
+
+
+Archived entries from file /Users/b/Github-repos/apollo-supercollider/apollo-overtone.org
+
+
+* Archived Tasks
+
+** test out mouse-controlled granular synth buffer playback
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-12-21 Wed 19:32
+:ARCHIVE_FILE: ~/Github-repos/apollo-supercollider/apollo-overtone.org
+:ARCHIVE_OLPATH: Apollo-overtone restart essentials
+:ARCHIVE_CATEGORY: apollo-overtone
+:END:
+#+BEGIN_SRC clojure :results silent
+(definst grainy [b 0] (let [
+                         trate (mouse-y:kr 1 30)
+                         dur (/ 2 trate)]
+                        (t-grains:ar 1 (impulse:ar trate) b 1 (mouse-x:kr 0 (buf-dur:kr b)) dur 0 0.8 2)))
+
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(grainy gran-buf)
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(definst slow-grain2 [b 0] 
+(t-grains:ar 1 (impulse:ar 0.5) b 1 (line 0 (buf-dur:kr 0) 600) 2 0 0.8 4))
+
+(slow-grain2)
+
+
+#+END_SRC
+
+** control goldberg and yancey played back granularly
+:PROPERTIES:
+:ARCHIVE_TIME: 2016-12-21 Wed 19:42
+:ARCHIVE_FILE: ~/Github-repos/apollo-supercollider/apollo-overtone.org
+:ARCHIVE_OLPATH: begin
+:ARCHIVE_CATEGORY: apollo-overtone
+:END:
+#+BEGIN_SRC clojure :results silent
+;; #<buffer-info: 184.540590s mono 0>
+
+  (definst slow-grain-reverb [b 0] 
+    (free-verb
+     (t-grains:ar 1 ;; num-channel
+                  (impulse:ar 0.5) ;; trigger
+                  b ;; bufnum
+                  1 ;; rate
+                  (line 0 (buf-dur:kr 0) 378) ;; centerpos--'dur' of line is big!
+                  0.5 ;; dur
+                  0 ;; pan
+                  1 ;; amp
+                  2 ;; interp
+                  )
+               :mix 0.2
+               :damp 0.1
+               :room 0.9))
+
+  (slow-grain-reverb)
+#+END_SRC
+
+#+RESULTS:
+: #<instrument: slow-grain-reverb>#<synth-node[loading]: user/slow-grain-reverb 54>
+
+Yancey buffer must be loaded as buffer 1 (below)
+#+BEGIN_SRC clojure :results silent
+;; #<buffer-info: 272.938163s mono 1>
+
+  (definst slow-grain-reverb-yancey [b 1] 
+    (free-verb
+     (t-grains:ar 1 ;; num-channel
+                  (impulse:ar 0.30) ;; trigger
+                  b ;; bufnum
+                  1 ;; rate
+                  (line 0 (buf-dur:kr 0) 500) ;; centerpos--'dur' of line is big!
+                  2 ;; dur
+                  0 ;; pan
+                  0.6 ;; amp
+                  1 ;; interp
+                  )
+               :mix 0.5
+               :damp 0.1
+               :room 0.9))
+
+  (slow-grain-reverb-yancey)
+#+END_SRC
