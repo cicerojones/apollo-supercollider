@@ -817,8 +817,7 @@ Basic playback of a loaded buffer
 #+END_SRC
 
 * consolidated steps restart (in progress)
-
-** too large
+** a start (too large)
 
 #+BEGIN_SRC clojure
   (midi-connected-devices)
@@ -947,76 +946,51 @@ Basic playback of a loaded buffer
 
 #+RESULTS:
 : ({:description "Axiom A.I.R. Mini32 MIDI", :vendor "M-Audio", :sinks 0, :sources 2147483647, :name "MIDI", :overtone.studio.midi/full-device-key [:midi-device "M-Audio" "MIDI" "Axiom A.I.R. Mini32 MIDI" 0], :info #object[com.sun.media.sound.MidiInDeviceProvider$MidiInDeviceInfo 0x5386ff43 "MIDI"], :overtone.studio.midi/dev-num 0, :device #object[com.sun.media.sound.MidiInDevice 0x7bf18b15 "com.sun.media.sound.MidiInDevice@7bf18b15"], :version "Unknown version"} {:description "Axiom A.I.R. Mini32 HyperControl", :vendor "M-Audio", :sinks 0, :sources 2147483647, :name "HyperControl", :overtone.studio.midi/full-device-key [:midi-device "M-Audio" "HyperControl" "Axiom A.I.R. Mini32 HyperControl" 0], :info #object[com.sun.media.sound.MidiInDeviceProvider$MidiInDeviceInfo 0x77743fc8 "HyperControl"], :overtone.studio.midi/dev-num 0, :device #object[com.sun.media.sound.MidiInDevice 0x68bfe7ec "com.sun.media.sound.MidiInDevice@68bfe7ec"], :version "Unknown version"})#'user/goldberg-slow#'user/yancey#<instrument: general-tgrains>#'user/cc1-1#'user/cc2-1#'user/cc3-1#'user/cc4-1#'user/cc5-1#'user/cc6-1#'user/cc7-1#'user/cc8-1#'user/cc1-2#'user/cc2-2#'user/cc3-2#'user/cc4-2#'user/cc5-2#'user/cc6-2#'user/cc7-2#'user/cc8-2#'user/pad1-1#'user/pad2-1#'user/pad3-1#'user/pad4-1#'user/pad5-1#'user/pad6-1#'user/pad7-1#'user/pad8-1#'user/pad1-2#'user/pad2-2#'user/pad3-2#'user/pad4-2#'user/pad5-2#'user/pad6-2#'user/pad7-2#'user/pad8-2#'user/reset-knob#'user/swap-pad:added-async-handler:added-async-handler:added-async-handler:added-async-handler
-
-** reversions
-
-
-#+RESULTS:
-: #'user/old-reset-knob
-
-
-
-#+RESULTS:
-: :added-async-handler:added-async-handler
-
+** [#C] use two different channels for modifying the two different synths
 #+BEGIN_SRC clojure
-(remove-event-handler ::old-amp-knob2)
-(remove-event-handler ::old-centerpos-knob1)
+  (on-event [:midi :control-change]
+            (old-reset-knob gold :amp 2 cc2-1 1 :scale 0.01)
+            ::old-amp-knob2-gold)
+
+  (on-event [:midi :control-change]
+            (old-reset-knob gold :centerpos 1 cc1-1 1 :scale 0.5)
+            ::old-centerpos-knob1-gold)
+
+  (on-event [:midi :control-change]
+            (old-reset-knob yanc :amp 2 cc2-2 2 :scale 0.01)
+            ::old-amp-knob2-yanc)
+
+  (on-event [:midi :control-change]
+            (old-reset-knob yanc :centerpos 1 cc1-2 2 :scale 0.5)
+            ::old-centerpos-knob1-yanc)
 #+END_SRC
 
-#+RESULTS:
-: :handler-removed:handler-removed
-
-** comparison
-#+BEGIN_SRC clojure
-
-  (defn swap-pad [synth buffer-num synth-param pad-number place swap-fn midi-channel]
-      (fn [{pad :note val :velocity chan :channel}]
-        (if (= chan midi-channel)
-          (cond (= pad pad-number)
-                (do (swap! place swap-fn)
-                    (ctl synth (keyword buffer) buffer-num (keyword synth-param) (deref place))
-                    (println (str synth-param pad-number " : ") (deref place)))))))
-    
-#+END_SRC
-
-** play and ctl
-#+BEGIN_SRC clojure
-(general-tgrains 0)
-#+END_SRC
-
-#+RESULTS:
-: #<synth-node[loading]: user/general-tgrains 54>
-
-#+BEGIN_SRC clojure
-(kill 54)
-#+END_SRC
-
-#+BEGIN_SRC clojure
-(general-tgrains 1)
-#+END_SRC
-
-#+RESULTS:
-: #<synth-node[loading]: user/general-tgrains 55>
-
-#+BEGIN_SRC clojure
-(kill 55)
-#+END_SRC
-
+Use one-channel but inc/dec more than two parameters per synth
 #+BEGIN_SRC clojure :results silent
-(ctl 54 :centerpos 10)
+  (on-event [:midi :note-on]
+            (old-swap-pad yanc :centerpos 38 pad3-1 inc 1)
+            ::yancey-centerpos-pad3-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad general-tgrains :buffer 1 :centerpos 39 pad3-1 dec 1)
+            ::yancey-centerpos-pad4-dec)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad general-tgrains :buffer 1 :dur-numerator 36 pad1-1 inc 1)
+            ::yancey-durnumerator-pad1)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad general-tgrains :buffer 1 :dur-numerator 37 pad1-1 dec 1)
+            ::yancey-durnumerator-pad2)
+
+(on-event [:midi :note-on]
+            (old-swap-pad general-tgrains :buffer 1 :trate 42 pad7-1 (fn [x] (+ 0.1 x)) 1)
+            ::yancey-trate-pad7-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad general-tgrains :buffer 1 :trate 43 pad7-1 (fn [x] (- x 0.1)) 1)
+            ::yancey-trate-pad8-dec)
 #+END_SRC
-
-#+BEGIN_SRC clojure :results silent
-(ctl 55 :centerpos 50)
-#+END_SRC
-
-#+BEGIN_SRC clojure :results silent
-(ctl general-tgrains :buffer 1 :centerpos 100)
-#+END_SRC
-
-
-
 * unified, systematized goldberg and yancey interface (as model)
 ** define general-tgrains-synth and name two such synths
 #+BEGIN_SRC clojure
@@ -1038,7 +1012,7 @@ Basic playback of a loaded buffer
 
 #+RESULTS:
 : #<synth: general-tgrains-synth>
-
+** define two vars for playing two buffers with general-tgrains-synth
 #+BEGIN_SRC clojure
 (def gold (general-tgrains-synth 0))
 (def yanc (general-tgrains-synth 1))
@@ -1072,11 +1046,20 @@ Basic playback of a loaded buffer
                 (do (reset! place (* val scale))
                     (ctl synth (keyword synth-param) (deref place))
                     (println (str synth-param knob-number " : ") (deref place)))))))
+
+  (defn old-swap-pad [synth synth-param pad-number place swap-fn midi-channel]
+      (fn [{pad :note val :velocity chan :channel}]
+        (if (= chan midi-channel)
+          (cond (= pad pad-number)
+                (do (swap! place swap-fn)
+                    (ctl synth (keyword synth-param) (deref place))
+                    (println (str synth-param pad-number " : ") (deref place)))))))
 #+END_SRC
 
 #+RESULTS:
-: #'user/old-reset-knob
+: #'user/old-reset-knob#'user/old-swap-pad
 
+Set four knobs
 #+BEGIN_SRC clojure
   (on-event [:midi :control-change]
             (old-reset-knob gold :amp 2 cc2-1 1 :scale 0.01)
@@ -1087,10 +1070,53 @@ Basic playback of a loaded buffer
             ::old-centerpos-knob1-gold)
 
   (on-event [:midi :control-change]
-            (old-reset-knob yanc :amp 2 cc2-2 2 :scale 0.01)
+            (old-reset-knob yanc :amp 6 cc5-1 1 :scale 0.01)
             ::old-amp-knob2-yanc)
 
   (on-event [:midi :control-change]
-            (old-reset-knob yanc :centerpos 1 cc1-2 2 :scale 0.5)
+            (old-reset-knob yanc :centerpos 5 cc6-1 1 :scale 0.5)
             ::old-centerpos-knob1-yanc)
 #+END_SRC
+
+#+RESULTS:
+: :added-async-handler:added-async-handler:added-async-handler:added-async-handler
+
+set eight pads
+
+#+BEGIN_SRC clojure
+  (on-event [:midi :note-on]
+            (old-swap-pad yanc :centerpos 38 pad3-1 inc 1)
+            ::yancey-centerpos-pad3-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad yanc  :centerpos 39 pad3-1 dec 1)
+            ::yancey-centerpos-pad4-dec)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad yanc  :dur-numerator 36 pad1-1 inc 1)
+            ::yancey-durnumerator-pad1-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad yanc  :dur-numerator 37 pad1-1 dec 1)
+            ::yancey-durnumerator-pad2-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad gold :centerpos 42 pad7-1 inc 1)
+            ::gold-centerpos-pad7-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad gold :centerpos 43 pad7-1 dec 1)
+            ::gold-centerpos-pad8-dec)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad gold  :dur-numerator 40 pad5-1 inc 1)
+            ::gold-durnumerator-pad5-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad gold  :dur-numerator 41 pad5-1 dec 1)
+            ::gold-durnumerator-pad6-dec)
+#+END_SRC
+
+#+RESULTS:
+: :added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler
+
