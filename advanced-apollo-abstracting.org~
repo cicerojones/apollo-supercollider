@@ -1,0 +1,298 @@
+* unified, systematized goldberg and yancey interface (as model)
+** define general-tgrains-synth and name two such synths
+MONO! (use =pan2=)
+
+#+BEGIN_SRC clojure
+    (defsynth general-tgrains-synth [buffer 0 trate 1 dur-numerator 8 amp 0.8 centerpos 0]
+      (out 0 (let [trate trate
+            dur (/ dur-numerator trate)
+            clk (impulse:ar trate)
+            centerpos centerpos]
+        (t-grains:ar 1
+                     clk
+                     buffer
+                     1
+                     centerpos
+                     dur
+                     0
+                     amp
+                     2))))
+#+END_SRC
+
+#+RESULTS:
+: #<synth: general-tgrains-synth>
+
+#+BEGIN_SRC clojure
+(general-tgrains-synth 0)
+#+END_SRC
+
+#+RESULTS:
+: #<synth-node[loading]: user/general-tgrains-synth 95>
+
+
+
+#+RESULTS:
+: #<synth: general-tgrains-synth>
+
+** define two vars for playing two buffers with general-tgrains-synth
+#+BEGIN_SRC clojure
+(def gold (general-tgrains-synth 0))
+(def yanc (general-tgrains-synth 1))
+#+END_SRC
+
+#+RESULTS:
+: #'user/gold#'user/yanc
+
+
+#+BEGIN_SRC clojure
+(kill gold)
+#+END_SRC
+
+#+RESULTS:
+: nil
+
+#+BEGIN_SRC clojure
+(ctl yanc :centerpos 40)
+#+END_SRC
+
+#+RESULTS:
+: #<synth-node[live]: user/general-tgrains-synth 76>
+** redo with general-tgrains-synth over general-tgrains as an inst
+
+#+BEGIN_SRC clojure
+  (defn old-reset-knob [synth synth-param knob-number place midi-channel & {:keys [scale]
+                                                                        :or {scale 1}}]
+      (fn [{knob :note val :velocity chan :channel}]
+        (if (= chan midi-channel)
+          (cond (= knob knob-number)
+                (do (reset! place (* val scale))
+                    (ctl synth (keyword synth-param) (deref place))
+                    (println (str synth-param knob-number " : ") (deref place)))))))
+
+  (defn old-swap-pad [synth synth-param pad-number place swap-fn midi-channel]
+      (fn [{pad :note val :velocity chan :channel}]
+        (if (= chan midi-channel)
+          (cond (= pad pad-number)
+                (do (swap! place swap-fn)
+                    (ctl synth (keyword synth-param) (deref place))
+                    (println (str synth-param pad-number " : ") (deref place)))))))
+#+END_SRC
+
+#+RESULTS:
+: #'user/old-reset-knob#'user/old-swap-pad
+
+Set four knobs
+#+BEGIN_SRC clojure
+  (on-event [:midi :control-change]
+            (old-reset-knob gold :amp 2 cc2-1 1 :scale 0.01)
+            ::old-amp-knob2-gold)
+
+  (on-event [:midi :control-change]
+            (old-reset-knob gold :centerpos 1 cc1-1 1 :scale 0.5)
+            ::old-centerpos-knob1-gold)
+
+  (on-event [:midi :control-change]
+            (old-reset-knob yanc :amp 6 cc5-1 1 :scale 0.01)
+            ::old-amp-knob2-yanc)
+
+  (on-event [:midi :control-change]
+            (old-reset-knob yanc :centerpos 5 cc6-1 1 :scale 0.5)
+            ::old-centerpos-knob1-yanc)
+#+END_SRC
+
+#+RESULTS:
+: :added-async-handler:added-async-handler:added-async-handler:added-async-handler
+
+set eight pads
+
+#+BEGIN_SRC clojure
+  (on-event [:midi :note-on]
+            (old-swap-pad yanc :centerpos 38 pad3-1 inc 1)
+            ::yancey-centerpos-pad3-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad yanc  :centerpos 39 pad3-1 dec 1)
+            ::yancey-centerpos-pad4-dec)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad yanc  :dur-numerator 36 pad1-1 inc 1)
+            ::yancey-durnumerator-pad1-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad yanc  :dur-numerator 37 pad1-1 dec 1)
+            ::yancey-durnumerator-pad2-dec)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad gold :centerpos 42 pad7-1 inc 1)
+            ::gold-centerpos-pad7-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad gold :centerpos 43 pad7-1 dec 1)
+            ::gold-centerpos-pad8-dec)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad gold  :dur-numerator 40 pad5-1 inc 1)
+            ::gold-durnumerator-pad5-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad gold  :dur-numerator 41 pad5-1 dec 1)
+            ::gold-durnumerator-pad6-dec)
+#+END_SRC
+
+#+RESULTS:
+: :added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler
+
+#+BEGIN_SRC clojure
+(remove-event-handler ::old-amp-knob2-yanc)
+(remove-event-handler ::old-centerpos-knob1-gold)
+(remove-event-handler ::old-centerpos-knob1-yanc)
+(remove-event-handler ::old-amp-knob2-yanc)
+
+(remove-event-handler ::yancey-centerpos-pad3-inc)
+(remove-event-handler ::yancey-centerpos-pad4-dec)
+(remove-event-handler ::yancey-durnumerator-pad1-inc)
+(remove-event-handler ::yancey-durnumerator-pad2-dec) ;; switch to dec
+
+(remove-event-handler ::gold-centerpos-pad7-inc)
+(remove-event-handler ::gold-centerpos-pad8-dec)
+(remove-event-handler ::gold-durnumerator-pad5-inc)
+(remove-event-handler ::gold-durnumerator-pad6-dec)
+
+#+END_SRC
+
+#+RESULTS:
+: :handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed
+
+** use t-rand
+#+BEGIN_SRC clojure
+  (defsynth general-trand-synth
+    "stochastic granular synthesis abstraction (in stereo!)"
+    [buffer 0 trate 1 dur-numerator 12 amp 0.8 centerpos 0]
+    (let [trate trate
+          dur (/ dur-numerator trate)
+          clk (impulse:kr trate)
+          centerpos (+ centerpos (t-rand:kr 0 0.1 clk))]
+      (out 0 (pan2 
+              (t-grains:ar 1      ;; num of channels in the output?
+                           clk    ;; aka 'trigger-rate'
+                           buffer ;; number of buffer passed in
+                           1      ;; playback "speed" of grain
+                           centerpos ;;
+                           dur    ;; length of grain
+                           0      ;; pan
+                           amp    ;; amplitude
+                           2      ;; interpolation type
+                           )))))
+#+END_SRC
+
+#+RESULTS:
+: #<synth: general-trand-synth>
+
+#+BEGIN_SRC clojure
+(def gold-rand (general-trand-synth 0))
+(def yanc-rand (general-trand-synth 1))
+#+END_SRC
+
+#+RESULTS:
+: #'user/gold-rand#'user/yanc-rand
+
+#+BEGIN_SRC clojure
+(def gold-rand (general-trand-synth2 0))
+(def yanc-rand (general-trand-synth2 1))
+#+END_SRC
+
+#+RESULTS:
+: #'user/gold-rand#'user/yanc-rand
+
+#+BEGIN_SRC clojure
+  (on-event [:midi :control-change]
+            (old-reset-knob gold-rand :amp 2 cc2-1 1 :scale 0.01)
+            ::old-amp-knob2-gold-rand)
+
+  (on-event [:midi :control-change]
+            (old-reset-knob gold-rand :centerpos 1 cc1-1 1 :scale 0.5)
+            ::old-centerpos-knob1-gold-rand)
+
+  (on-event [:midi :control-change]
+            (old-reset-knob yanc-rand :amp 6 cc5-1 1 :scale 0.01)
+            ::old-amp-knob2-yanc-rand)
+
+  (on-event [:midi :control-change]
+            (old-reset-knob yanc-rand :centerpos 5 cc6-1 1 :scale 0.5)
+            ::old-centerpos-knob1-yanc-rand)
+#+END_SRC
+
+#+RESULTS:
+: :added-async-handler:added-async-handler:added-async-handler:added-async-handler
+
+#+BEGIN_SRC clojure
+  (on-event [:midi :note-on]
+            (old-swap-pad yanc-rand :centerpos 38 pad3-1 inc 1)
+            ::yanc-randey-centerpos-pad3-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad yanc-rand  :centerpos 39 pad3-1 dec 1)
+            ::yanc-randey-centerpos-pad4-dec)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad yanc-rand  :dur-numerator 36 pad1-1 inc 1)
+            ::yanc-randey-durnumerator-pad1-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad yanc-rand  :dur-numerator 37 pad1-1 dec 1)
+            ::yanc-randey-durnumerator-pad2-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad gold-rand :centerpos 42 pad7-1 inc 1)
+            ::gold-rand-centerpos-pad7-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad gold-rand :centerpos 43 pad7-1 dec 1)
+            ::gold-rand-centerpos-pad8-dec)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad gold-rand  :dur-numerator 40 pad5-1 inc 1)
+            ::gold-rand-durnumerator-pad5-inc)
+
+  (on-event [:midi :note-on]
+            (old-swap-pad gold-rand  :dur-numerator 41 pad5-1 dec 1)
+            ::gold-rand-durnumerator-pad6-dec)
+#+END_SRC
+
+#+RESULTS:
+: :added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler
+
+#+BEGIN_SRC clojure
+(remove-event-handler ::yancey-amp-knob2)
+(remove-event-handler ::yancey-centerpos-knob1)
+(remove-event-handler ::yancey-centerpos-pad3-inc)
+(remove-event-handler ::yancey-centerpos-pad4-dec)
+(remove-event-handler ::yancey-durnumerator-pad1)
+(remove-event-handler ::yancey-durnumerator-pad2)
+(remove-event-handler ::yancey-trate-pad7-inc)
+(remove-event-handler ::yancey-trate-pad8-dec)
+#+END_SRC
+
+#+BEGIN_SRC clojure
+  (defsynth general-trand-synth2
+    "stochastic granular synthesis abstraction (in stereo!)"
+    [buffer 0 trate 1 dur-numerator 12 amp 0.8 centerpos 0]
+    (let [trate trate
+          dur (/ dur-numerator (+ trate (t-rand:kr 0 0.1 (impulse:kr trate))))
+          clk (impulse:kr (+ trate (t-rand:kr 0 0.1 (impulse:kr trate))))
+          centerpos (+ centerpos (t-rand:kr 0 0.1 clk))]
+      (out 0 (pan2 
+              (t-grains:ar 1      ;; num of channels in the output?
+                           clk    ;; aka 'trigger-rate'
+                           buffer ;; number of buffer passed in
+                           1      ;; playback "speed" of grain
+                           centerpos ;;
+                           dur    ;; length of grain
+                           0      ;; pan
+                           amp    ;; amplitude
+                           2      ;; interpolation type
+                           )))))
+#+END_SRC
+
+#+RESULTS:
+: #<synth: general-trand-synth2>
