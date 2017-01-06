@@ -11,61 +11,33 @@
 ** define general-tgrains-synth (buffer trate dur-numerator amp centerpos)
 MONO! (use =pan2=)
 
-#+BEGIN_SRC clojure
-    (defsynth general-tgrains-synth [buffer 0 trate 1 dur-numerator 8 amp 0.8 centerpos 0]
-      (out 0 (let [trate trate
-            dur (/ dur-numerator trate)
-            clk (impulse:ar trate)
-            centerpos centerpos]
-        (t-grains:ar 1
-                     clk
-                     buffer
-                     1
-                     centerpos
-                     dur
-                     0
-                     amp
-                     2))))
+#+BEGIN_SRC clojure :results silent
+  (defsynth general-tgrains-synth [buffer 0 trate 1 dur-numerator 8 amp 0.8 centerpos 0]
+    (out 0 (let [trate trate
+          dur (/ dur-numerator trate)
+          clk (impulse:ar trate)
+          centerpos centerpos]
+      (t-grains:ar 1 clk buffer 1 centerpos dur 0 amp 2))))
 #+END_SRC
 
-#+RESULTS:
-: #<synth: general-tgrains-synth>
-
-#+BEGIN_SRC clojure
+#+BEGIN_SRC clojure :results silent
 (general-tgrains-synth 0)
 #+END_SRC
 
-#+RESULTS:
-: #<synth-node[loading]: user/general-tgrains-synth 425>
-
-
-
-#+RESULTS:
-: #<synth: general-tgrains-synth>
-
 ** define two vars for playing two buffers with general-tgrains-synth
-#+BEGIN_SRC clojure
+#+BEGIN_SRC clojure :results silent
 (def gold (general-tgrains-synth 0))
 ;; (def yanc (general-tgrains-synth 1))
 #+END_SRC
 
-#+RESULTS:
-: #'user/gold
-
-
-#+BEGIN_SRC clojure
+#+BEGIN_SRC clojure :results silent
 (kill gold)
 #+END_SRC
-
-#+RESULTS:
-: nil
 
 #+BEGIN_SRC clojure
 (ctl yanc :centerpos 40)
 #+END_SRC
 
-#+RESULTS:
-: #<synth-node[live]: user/general-tgrains-synth 427>
 ** define knob and pad changes with more sophisticated passing
 
 #+BEGIN_SRC clojure :results silent
@@ -108,7 +80,7 @@ MONO! (use =pan2=)
 
 ** set eight pads for "inc/dec" of centerpos and dur-numerator
 
-#+BEGIN_SRC clojure
+#+BEGIN_SRC clojure :results
   (on-event [:midi :note-on]
             (old-swap-pad yanc :centerpos 38 pad3-1 inc 1)
             ::yancey-centerpos-pad3-inc)
@@ -142,9 +114,7 @@ MONO! (use =pan2=)
             ::gold-durnumerator-pad6-dec)
 #+END_SRC
 
-#+RESULTS:
-: :added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler:added-async-handler
-
+* use refs for setting values of synth parameters
 ** trigger start position from keyboard
 
 #+BEGIN_SRC clojure :results silent
@@ -182,9 +152,46 @@ MONO! (use =pan2=)
 (remove-event-handler ::set-current-val-scale-and-play)
 #+END_SRC
 
+** set trate
 #+BEGIN_SRC clojure :results silent
+  (on-event [:midi :control-change]
+            (fn [{note :note vel :velocity}]
+              (cond (= note 2) (do (reset! dst-hi vel)
+                                   (println @dst-hi))))
+              ::test-range-high)
 
 #+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+  (on-event [:midi :control-change]
+            (fn [{note :note vel :velocity}]
+              (cond (= note 3)
+                    (do (reset! trate-ref vel)
+                        (ctl gold :trate (maprange [0 127] [0.01 2] vel))
+                        (println vel))))
+            ::set-trate-and-play)
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(ctl gold :trate 0.5)
+#+END_SRC
+
+** dur numerator
+#+BEGIN_SRC clojure :results silent
+(ctl gold :dur-numerator 12)
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+  (on-event [:midi :control-change]
+            (fn [{note :note vel :velocity}]
+              (cond (= note 4)
+                    (do (reset! durnumerator-ref vel)
+                        (ctl gold :dur-numerator (maprange [0 127] [1 20] vel))
+                        (println vel))))
+            ::set-durnum-and-play)
+#+END_SRC
+
+
 * other homemade granular synths (line synths)
 ** use lines and scaling and more MIDI buttons
 :PROPERTIES:
@@ -393,7 +400,6 @@ general-trand-synth2 defined below
 : :handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed
 
 * translated from sc granular examples
-
 ** uses dust
 #+BEGIN_SRC clojure :results silent
   (defsynth dust-gran-synth

@@ -700,6 +700,7 @@ Basic playback of a loaded buffer
     i = Synth(\goldberg_synth);
 #+END_SRC
 
+** 
 * relevant apollo and incarnations soundfiles
 ** directories
 [[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/]]
