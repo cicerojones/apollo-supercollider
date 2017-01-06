@@ -129,12 +129,9 @@ MONO! (use =pan2=)
 
 #+END_SRC
 
-#+BEGIN_SRC clojure
+#+BEGIN_SRC clojure :results silent
 (remove-event-handler ::set-current-val-and-play)
 #+END_SRC
-
-#+RESULTS:
-: :handler-removed
 
 #+BEGIN_SRC clojure :results silent
   (on-event [:midi :note-on]
@@ -190,7 +187,6 @@ MONO! (use =pan2=)
                         (println vel))))
             ::set-durnum-and-play)
 #+END_SRC
-
 
 * other homemade granular synths (line synths)
 ** use lines and scaling and more MIDI buttons
