@@ -8,7 +8,7 @@
 #+RESULTS:
 : nil
 * unified, systematized goldberg and yancey interface (as model)
-** define general-tgrains-synth (buffer trate dur-numerator amp centerpos)
+** [#C] define general-tgrains-synth (buffer trate dur-numerator amp centerpos)
 MONO! (use =pan2=)
 
 #+BEGIN_SRC clojure :results silent
@@ -39,6 +39,9 @@ MONO! (use =pan2=)
 #+END_SRC
 
 ** define knob and pad changes with more sophisticated passing
+:PROPERTIES:
+:ID:       BCB30277-2E56-44FB-A36F-F985A0473C9B
+:END:
 
 #+BEGIN_SRC clojure :results silent
   (defn old-reset-knob [synth synth-param knob-number place midi-channel & {:keys [scale]
@@ -60,6 +63,9 @@ MONO! (use =pan2=)
 #+END_SRC
 
 ** Set four knobs for amp and centerpos across goldberg and yancey
+:PROPERTIES:
+:ID:       B859EFB9-72F9-405E-9E1F-A0BF75022781
+:END:
 #+BEGIN_SRC clojure :results silent
   (on-event [:midi :control-change]
             (old-reset-knob gold :amp 2 cc2-1 1 :scale 0.01)
@@ -149,16 +155,21 @@ MONO! (use =pan2=)
 (remove-event-handler ::set-current-val-scale-and-play)
 #+END_SRC
 
-** set trate
+** [#A] set 'dst-hi' ref from cc-2
 #+BEGIN_SRC clojure :results silent
   (on-event [:midi :control-change]
             (fn [{note :note vel :velocity}]
               (cond (= note 2) (do (reset! dst-hi vel)
-                                   (println @dst-hi))))
+                                   (println "dst-hi: " @dst-hi))))
               ::test-range-high)
 
 #+END_SRC
 
+#+BEGIN_SRC clojure :results silent
+(remove-event-handler ::test-range-high)
+#+END_SRC
+
+** use cc-3 to set 'trate-ref' (with goldberg)
 #+BEGIN_SRC clojure :results silent
   (on-event [:midi :control-change]
             (fn [{note :note vel :velocity}]
@@ -173,7 +184,7 @@ MONO! (use =pan2=)
 (ctl gold :trate 0.5)
 #+END_SRC
 
-** dur numerator
+** use cc-4 to set 'durnumerator'
 #+BEGIN_SRC clojure :results silent
 (ctl gold :dur-numerator 12)
 #+END_SRC
@@ -189,18 +200,13 @@ MONO! (use =pan2=)
 #+END_SRC
 
 * other homemade granular synths (line synths)
-** use lines and scaling and more MIDI buttons
-:PROPERTIES:
-:ID:       326223F4-AA19-4058-A07C-3E5F5DB9AFF5
-:END:
-#+BEGIN_SRC clojure
+** [#B] use lines and scaling and more MIDI buttons
+#+BEGIN_SRC clojure :results silent
 (def gold (general-tgrains-synth :buffer 0 :centerpos (line:kr 0.0 100 30)))
 #+END_SRC
 
-#+RESULTS:
-: #'user/gold
 
-#+BEGIN_SRC clojure
+#+BEGIN_SRC clojure :results silent
   (defsynth tgrains-line-synth [buffer 0 trate 1 dur-numerator 8 amp 0.8 centerpos 0 mult 2]
     (out 0 (pan2 
             (let [track-len (buf-dur:kr buffer)
@@ -219,11 +225,8 @@ MONO! (use =pan2=)
                            2)))))
 #+END_SRC
 
-#+RESULTS:
-: #<synth: tgrains-line-synth>
 
-
-Plays almost exactly like regular track
+Plays almost exactly like regular track depending on the "mult"
 #+BEGIN_SRC clojure
 (def gold-line (tgrains-line-synth :mult 5))
 #+END_SRC
@@ -237,7 +240,7 @@ Plays almost exactly like regular track
 
 #+RESULTS:
 : #'user/yanc-line
-** more complicated granular synth playack (use 't-rand')
+** [#B] more complicated granular synth playack (use 't-rand')
 #+BEGIN_SRC clojure
   (defsynth general-trand-synth
     "stochastic granular synthesis abstraction (in stereo!)"
@@ -347,7 +350,7 @@ general-trand-synth2 defined below
 (remove-event-handler ::yancey-trate-pad7-inc)
 (remove-event-handler ::yancey-trate-pad8-dec)
 #+END_SRC
-** granular synth uses t-rands + impulse throughout
+** [#B] granular synth uses t-rands + impulse throughout
 #+BEGIN_SRC clojure
   (defsynth general-trand-synth2
     "stochastic granular synthesis abstraction (in stereo!)"
@@ -423,3 +426,81 @@ general-trand-synth2 defined below
 #+BEGIN_SRC clojure :results silent
 (def gold-dust2 (dust-gran-synth 0 :centerpos (line 0 (buf-dur:kr 0) (buf-dur:kr 0) )))
 #+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(def some-dust (dust-gran-synth 2))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+;; fails!
+;; can't send a ugen in place of a float as a control message
+;; see solution:
+;; [[id:5B64A0AA-C2B5-468A-A39F-4DC5D3EF55D0][keyboard keys and transport event handlers (with scaling)]]
+(ctl some-dust :centerpos (line 0 (buf-dur:kr 0) (buf-dur:kr 0) ))
+
+#+END_SRC
+
+* develop abstraction for controlling parameters of any granular synth
+** required functions
+[[id:BCB30277-2E56-44FB-A36F-F985A0473C9B][define knob and pad changes with more sophisticated passing]]
+
+** required event-handler templates
+[[id:B859EFB9-72F9-405E-9E1F-A0BF75022781][Set four knobs for amp and centerpos across goldberg and yancey]]
+
+** examples of required atoms
+[[id:B3DB9C3B-4F2B-40D4-B16C-DF3047C968D9][define 32 atoms for two sets of channels and CC messages]]
+
+** general overview of steps
+
+[[id:EEEBABF7-6A2A-4B1A-9D57-D1C8E0D42E72][make abstraction for playing with CC and granular synth]]
+
+** finally, see dedicated file
+[[file:final-tgrain-controller-abstraction.org][file:~/Github-repos/apollo-supercollider/final-tgrain-controller-abstraction.org]]
+
+** create macro for event-handlers
+
+*** must record values from somewhere???
+#+BEGIN_SRC clojure :results silent
+  (on-event [:midi :control-change]
+            (fn [{cc-channel :note vel :velocity}]
+              (case vel
+                127
+                (case cc-channel 
+                  18 (record-val current-val)
+                  17 (println (deref liked-values))
+                  :else nil)
+                0 nil))
+            ::record-value-handler)
+#+END_SRC
+
+*** actual event handler for template
+#+BEGIN_SRC clojure :results silent
+(on-event [:midi :note-on]
+              (fn [{note :note}]
+                (let [val (deref current-val)]
+                  (do (reset! current-val (maprange [60 91] [0.0 (deref dst-hi)] note))
+                      (ctl var1 :centerpos val)
+                      (println (str "var1 centerpos"  ":" (round2 val 2))))))
+              ::some-var1-synth-name))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(remove-event-handler ::some-var1-synth-name)
+#+END_SRC
+*** first draft macro
+#+BEGIN_SRC clojure :results silent
+  (defmacro note-events-from-current-val
+    [synth double-colon-name hi-scaling-dest]
+  `(on-event [:midi :note-on]
+              (fn [{note :note}]
+                (let [val# (deref current-val)]
+                  (do (reset! current-val (maprange [60 91] [0.0 (deref ~hi-scaling-dest)] note))
+                      (ctl ~synth :centerpos val#)
+                      (println (str ~double-colon-name ":" (round2 val 2))))))
+              ~double-colon-name))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(note-events-from-current-val var1 ::var1-centerpos dst-hi)
+#+END_SRC
+
