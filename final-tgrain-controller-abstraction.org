@@ -1,6 +1,6 @@
 * preliminaries
 [[id:F50F4B96-20C5-4F82-A29D-88791760D5F5][load all apollo soundfiles into overtone]]
-* define synths and load samples
+* define synths
 ** new general-tgrains-synth
 *** definition
 #+BEGIN_SRC clojure :results silent
@@ -12,8 +12,27 @@
       (out 0 (pan2 (t-grains:ar 1 clk buffer 1 centerpos dur 0 amp 2)))))
 #+END_SRC
 *** arguments comprise: buff trate dur-num amp centerpos
-** load samples with synth
-*** general-tgrains
+** tgrains-line
+#+BEGIN_SRC clojure :results silent
+  (defsynth tgrains-line-synth [buffer 0 trate 1 dur-numerator 8 amp 0.8 centerpos 0 duration-mult 2]
+    (out 0 (pan2 
+            (let [track-len (buf-dur:kr buffer)
+                  trate trate
+                  dur (/ dur-numerator trate)
+                  clk (impulse:ar trate)
+                  centerpos (line:kr centerpos track-len (* duration-mult track-len))  ]
+              (t-grains:ar 1
+                           clk
+                           buffer
+                           1
+                           centerpos
+                           dur
+                           0
+                           amp
+                           2)))))
+#+END_SRC
+* load samples with synth
+** general-tgrains
 #+BEGIN_SRC clojure
   (def goldberg-slow (load-sample "/Users/b/Google Drive/Audio_uploads/wav-file-uploads/goldberg-slow-mono.wav"))
 
@@ -26,7 +45,7 @@
 #+BEGIN_SRC clojure :results silent
 (def var1 (general-tgrains-synth 0))
 #+END_SRC
-*** tgrains-line 
+** tgrains-line 
 [[id:326223F4-AA19-4058-A07C-3E5F5DB9AFF5][use lines and scaling and more MIDI buttons]]
 
 #+BEGIN_SRC clojure
