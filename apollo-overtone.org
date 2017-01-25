@@ -19,6 +19,9 @@
 (recording-start "~/Desktop/goldberg-2016-2.wav")
 #+END_SRC
 
+#+BEGIN_SRC clojure :results silent
+(recording-start "~/Desktop/goldberg-2017-1.wav")
+#+END_SRC
 
 #+BEGIN_SRC clojure :results silent
 (recording-start "~/Desktop/yancey-2016-1.wav")
@@ -54,7 +57,8 @@
 #+BEGIN_SRC clojure :results silent
 (def goldberg-slow (load-sample "/Users/b/Google Drive/Audio_uploads/wav-file-uploads/goldberg-slow-mono.wav"))
 
-(def yancey (load-sample "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/how-long-slowest-mono.wav"))
+;; see load all below
+;; (def yancey (load-sample "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/how-long-slowest-mono.wav"))
 #+END_SRC
 
 
@@ -64,7 +68,7 @@
 
 #+BEGIN_SRC clojure :results silent
 (play)
-(play 1)
+;; (play 1)
 #+END_SRC
 
 *** load all apollo soundfiles into overtone
@@ -80,20 +84,20 @@
 #+BEGIN_SRC clojure
   (def variation1 (load-sample (str path-to-mono "apollo-variation1-mono.wav")))
   (def variation2 (load-sample (str path-to-mono "apollo-variation2-mono.wav")))
-  (def apotheose (load-sample (str path-to-mono"apotheose-mono.wav")))
-  (def calliope (load-sample (str path-to-mono"calliope-mono.wav")))
-  (def coda (load-sample (str path-to-mono"coda-mono.wav")))
-  (def yancey  (load-sample (str path-to-mono"how-long-slowest-mono.wav")))
-  (def naissance (load-sample (str path-to-mono"naissance-mono.wav")))
-  (def pas-daction (load-sample (str path-to-mono"pas-d'action-mono.wav")))
-  (def pas-deux (load-sample (str path-to-mono"pas-de-deux-mono.wav")))
-  (def polymnie (load-sample (str path-to-mono"polymnie-mono.wav")))
-  (def terpsichore (load-sample (str path-to-mono"terpsichore-mono.wav")))
+  (def apotheose (load-sample (str path-to-mono "apotheose-mono.wav")))
+  (def calliope (load-sample (str path-to-mono "calliope-mono.wav")))
+  (def coda (load-sample (str path-to-mono "coda-mono.wav")))
+  (def yancey  (load-sample (str path-to-mono "how-long-slowest-mono.wav")))
+  (def naissance (load-sample (str path-to-mono "naissance-mono.wav")))
+  (def pas-daction (load-sample (str path-to-mono "pas-d'action-mono.wav")))
+  (def pas-deux (load-sample (str path-to-mono "pas-de-deux-mono.wav")))
+  (def polymnie (load-sample (str path-to-mono "polymnie-mono.wav")))
+  (def terpsichore (load-sample (str path-to-mono "terpsichore-mono.wav")))
 #+END_SRC
 
 #+RESULTS:
 : #'user/variation1#'user/variation2#'user/apotheose#'user/calliope#'user/coda#'user/yancey#'user/naissance#'user/pas-daction#'user/pas-deux#'user/polymnie#'user/terpsichore
-
+**** load single buffers
 #+BEGIN_SRC clojure :results silent
 (def variation1 (load-sample (str path-to-mono "apollo-variation1-mono.wav")))
 #+END_SRC
@@ -104,6 +108,11 @@
 #+END_SRC
 
 **** shorthand buffer mnemonics
+Where should we put Goldberg?
+0.
+1. 
+2. 
+
 0) solo violin (variation1)
 1) big forte three chords (open-closed fist--variation2)
 2) "morendo" (apotheose)
@@ -169,6 +178,15 @@
 
 #+END_SRC
 
+*** irma thomas
+
+#+BEGIN_SRC clojure :results silent
+(def irma (load-sample "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/full-time-mono.wav"))
+#+END_SRC
+
+
+*** link to sample directories
+[[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/]]
 ** keyboard macro to stop sound
 
 #+BEGIN_SRC elisp :results silent
@@ -275,6 +293,20 @@ C-l			;; recenter-top-bottom
 | Channel-one | KNOBS | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | PADS | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Channel-two | KNOBS | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | PADS | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 * begin making sound with sound files
+
+** note: most of this file is now to be archived
+see final-tgrain-controller-abstraction.org 
+[[id:72B246E0-F6CF-4AC8-8113-C1CE8F83572B][preliminaries]]
+** consider what synths to use
+[[id:94621238-5BF8-497B-96CE-8E1CB951311A][define synths (taken from =granular-synth-focused.org=)]]
+
+- general-tgrains :: used by all the event-handlers below??
+- general-tgrains-synth :: preferred in later files; uses =out=
+- tgrains-line-synth ::
+- slow-grain-reverb ::
+- general-trand-synth- :: 
+
+
 ** def an instrument for playing with parameters to TGrains
 :PROPERTIES:
 :ID:       F2B83957-0823-4B8B-A77A-4F7D8080B0B9
@@ -716,7 +748,6 @@ getting going with goldberg aria
 (remove-event-handler ::yancey-trate-pad7-inc)
 (remove-event-handler ::yancey-trate-pad8-dec)
 #+END_SRC
-* save given state of parameters for replaying good grain-moments
 * translate goldberg and yancey to overtone
 ** check loaded buffers for incarnation
 
