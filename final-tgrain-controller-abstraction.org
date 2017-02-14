@@ -23,21 +23,13 @@ see below
 ** tgrains-line
 #+BEGIN_SRC clojure :results silent
   (defsynth tgrains-line-synth [buffer 0 trate 1 dur-numerator 8 amp 0.8 centerpos 0 duration-mult 2]
-    (out 0 (pan2 
+    (out 0 (pan2
             (let [track-len (buf-dur:kr buffer)
                   trate trate
                   dur (/ dur-numerator trate)
                   clk (impulse:ar trate)
                   centerpos (line:kr centerpos track-len (* duration-mult track-len))  ]
-              (t-grains:ar 1
-                           clk
-                           buffer
-                           1
-                           centerpos
-                           dur
-                           0
-                           amp
-                           2)))))
+              (t-grains:ar 1 clk buffer 1 centerpos dur 0 amp 2)))))
 #+END_SRC
 ** slow-grain-reverb
 [[id:F109AE32-4289-4A8B-8637-B68D7B4FA5B6][SLOW-GRAIN-REVERB: dedicated instrument abstraction for t-grains synths]]
@@ -62,7 +54,7 @@ from granular-synth focused
 
 #+BEGIN_SRC clojure :results silent
 ;; what's in the 11th buffer?
-(def gold (general-tgrains-synth 11))
+(def gold (general-tgrains-synth goldberg-slow))
 #+END_SRC
 
 #+BEGIN_SRC clojure :results silent
@@ -72,18 +64,27 @@ from granular-synth focused
 [[id:326223F4-AA19-4058-A07C-3E5F5DB9AFF5][use lines and scaling and more MIDI buttons]]
 
 #+BEGIN_SRC clojure
-(def var1-line (tgrains-line-synth :buffer 0 :mult 1))
+(def var1-line (tgrains-line-synth :buffer goldberg-slow :mult 1))
 #+END_SRC
 
 #+RESULTS:
 : #'user/var1-line
 
 #+BEGIN_SRC clojure :results silent
-(ctl var1-line :amp 0.1)
+(def var3-line (tgrains-line-synth :buffer 7 :mult 1))
+#+END_SRC
+
+
+#+BEGIN_SRC clojure :results silent
+(ctl var2-line :buffer 7 :centerpos 0)
 #+END_SRC
 
 #+BEGIN_SRC clojure :results silent
-(ctl var1-line :amp 0.8)
+(ctl var1-line :trate 2)
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(ctl var2-line :trate 1)
 #+END_SRC
 
 #+BEGIN_SRC clojure :results silent
@@ -91,7 +92,7 @@ from granular-synth focused
 #+END_SRC
 
 #+BEGIN_SRC clojure :results silent
-(ctl var1-line :dur-numerator 1)
+(ctl var2-line :dur-numerator 2)
 #+END_SRC
 
 #+BEGIN_SRC clojure :results silent
@@ -123,7 +124,9 @@ from granular-synth focused
   (def current-val (atom 0))
 
 ;;; use cc knob to change high point of maprange destination value
-  (def dst-hi (atom 0))
+  (def dst-lo (atom 0.01))
+
+  (def dst-hi (atom 1))
 
 ;;; determine trate value
   (def trate-ref (atom 1))
@@ -200,7 +203,7 @@ takes:
 :PROPERTIES:
 :ID:       5B64A0AA-C2B5-468A-A39F-4DC5D3EF55D0
 :END:
-**** general CC mesages
+**** general CC mesages (save values; change dst-hi range)
 :PROPERTIES:
 :ID:       D5F733E4-1698-40FB-8B24-D634FD7B39A5
 :END:
@@ -303,7 +306,6 @@ see [[id:D5F733E4-1698-40FB-8B24-D634FD7B39A5][general CC mesages]] above
   - or is this a problem from somewhere else?
 - octave of keyboard must be appropriately set!
 
-
 ** function definition
 #+BEGIN_SRC clojure :results silent
 ;; determine "centerpos" based on MIDI keyboard notes
@@ -345,16 +347,16 @@ see [[id:D5F733E4-1698-40FB-8B24-D634FD7B39A5][general CC mesages]] above
 Can set any ref to be used with any knob-num!
 Refs all come with a "-ref" name ending!
 
-Needs an active-synth!
+Needs an active-synth! (That is making use of that ref's value?)
 
 #+BEGIN_SRC clojure :results silent
-(defn cc-on-eventer-printer [a-ref knob-num double-colon-name]
-(on-event [:midi :control-change]
-            (fn [{note :note val :velocity}]
-              (cond (= note knob-num) 
-              (do (reset! a-ref val)
-                                   (println (str double-colon-name ": " (deref a-ref))))))
-double-colon-name))
+  (defn cc-on-eventer-printer [a-ref knob-num double-colon-name]
+    (on-event [:midi :control-change]
+              (fn [{note :note val :velocity}]
+                (cond (= note knob-num) 
+                      (do (reset! a-ref val)
+                          (println (str double-colon-name ": " (deref a-ref))))))
+              double-colon-name))
 #+END_SRC
 
 ** create and remove handler
@@ -391,20 +393,46 @@ specific use for this event-handler!
 (remove-event-handler ::var1-trate-change)
 #+END_SRC
 
-
-*** model definition
+** more general CC handler
 #+BEGIN_SRC clojure :results silent
-  (on-event [:midi :control-change]
-            (fn [{note :note vel :velocity}]
-              (cond (= note 3)
-                    (do (reset! trate-ref vel)
-                        (ctl gold :trate (maprange [0 127] [0.01 2] vel))
-                        (println vel))))
-            ::set-trate-and-play)
+  (defmacro cc-param-on-eventer [active-synth a-ref tgrain-param knob-num dst-lo-ref dst-hi-ref double-colon-name]
+    (on-event [:midi :control-change]
+              (fn [{note :note vel :velocity}]
+                (let [val (deref a-ref)
+                      dstlo (deref dst-lo-ref) 
+                      dsthi (deref dst-hi-ref)]
+                  (cond (= note knob-num) 
+                        (do (reset! a-ref (maprange [0 127] [dstlo dsthi] vel))
+                            (ctl active-synth (keyword tgrain-param) (deref a-ref))
+                            (println (str double-colon-name ": " (round2 val 2) " => " (round2 (deref a-ref) 2)))))))
+              double-colon-name))
 #+END_SRC
 
 #+BEGIN_SRC clojure :results silent
-(cc-on-eventer trate-ref 3 ::trate-change)
+(cc-param-on-eventer var1-noline trate-ref trate 1 dst-lo dst-hi ::more-general-trate-scaled)
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(remove-event-handler ::more-general-trate-scaled)
+#+END_SRC
+*** model definitions for refactoring as more abstract
+#+BEGIN_SRC clojure :results silent
+  (defn cc-param-on-eventer1 [active-synth knob-num double-colon-name]
+    (on-event [:midi :control-change]
+              (fn [{note :note vel :velocity}]
+                  (cond (= note knob-num) 
+                        (do (reset! @trate-ref (maprange [0 127] [0.01 1 ] vel))
+                            (ctl active-synth :tgrain @trate-ref)
+                            (println (str double-colon-name ": " (round2 (deref trate-ref) 2) " => " (round2 (deref trate-ref) 2))))))
+              double-colon-name))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(cc-param-on-eventer1 var1-noline 1 ::simpler-hardcoded-cc)
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(remove-event-handler ::simpler-hardcoded-cc)
 #+END_SRC
 *** ultimately use a ref for scaling?
 

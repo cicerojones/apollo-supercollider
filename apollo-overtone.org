@@ -53,7 +53,77 @@
 :PROPERTIES:
 :ID:       19C65970-C333-4D09-AD7B-31C158D9C120
 :END:
-*** basic 
+*** load all apollo soundfiles into overtone
+:PROPERTIES:
+:ID:       C99A4AE2-B22E-4F21-88B8-E64B3CC4D6E2
+:END:
+**** preferred sequence for loading apollo and other incarnation samples
+:PROPERTIES:
+:ID:       62220D41-AE0A-4D5F-B2D6-6B100610A89B
+:END:
+#+BEGIN_SRC clojure :results silent
+
+(def path-to-sounds "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/")
+(def path-to-mono (str path-to-sounds "sounds/all-mono/"))
+#+END_SRC
+
+#+BEGIN_SRC clojure
+  (def variation1 (load-sample (str path-to-mono "apollo-variation1-mono.wav")))
+  (def variation2 (load-sample (str path-to-mono "apollo-variation2-mono.wav")))
+  (def apotheose (load-sample (str path-to-mono "apotheose-mono.wav")))
+  (def calliope (load-sample (str path-to-mono "calliope-mono.wav")))
+  (def coda (load-sample (str path-to-mono "coda-mono.wav")))
+  (def yancey  (load-sample (str path-to-mono "how-long-slowest-mono.wav")))
+  (def naissance (load-sample (str path-to-mono "naissance-mono.wav")))
+  (def pas-daction (load-sample (str path-to-mono "pas-daction-real-mono.wav")))
+  (def pas-deux (load-sample (str path-to-mono "pas-de-deux-mono1.wav")))
+  (def polymnie (load-sample (str path-to-mono "polymnie-mono.wav")))
+  (def terpsichore (load-sample (str path-to-mono "terpsichore-mono.wav")))
+  ;; not in all-mono dir?
+  (def goldberg-slow (load-sample "/Users/b/Google Drive/Audio_uploads/wav-file-uploads/goldberg-slow-mono.wav"))
+  (def irma (load-sample (str path-to-sounds "sounds/full-time-mono.wav")))
+
+
+#+END_SRC
+
+#+RESULTS:
+: #'user/variation1#'user/variation2#'user/apotheose#'user/calliope#'user/coda#'user/yancey#'user/naissance#'user/pas-daction#'user/pas-deux#'user/polymnie#'user/terpsichore#'user/goldberg-slow#'user/irma
+**** load single buffers
+#+BEGIN_SRC clojure :results silent
+(def variation1 (load-sample (str path-to-mono "apollo-variation1-mono.wav")))
+#+END_SRC
+
+#+BEGIN_SRC clojure
+(def yancey (load-sample "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/how-long-slowest-mono.wav"))
+
+#+END_SRC
+
+#+BEGIN_SRC clojure
+  (def irma (load-sample (str path-to-sounds "sounds/full-time-mono.wav"))))
+#+END_SRC
+
+#+RESULTS:
+
+**** shorthand buffer mnemonics
+Where should we put Goldberg?
+0.
+1. solo violin (variation1)
+2. big forte three chords (open-closed fist--variation2)
+3. "morendo" (apotheose)
+4. spikey 6/8 (calliope)
+5. uptemp coda (flipside, pre-apotheose)
+6. yancey 
+7. very opening, string sixteenth dotted-eighth (naissance)
+8. gentle, pre pas-de-deux (pas d'action)
+9. gradual tenutos (pas-de-deux)
+10. bright, sixteenth note runs (polymnie)
+11. spiky sixteenth dotted-eighth (terpsichore)
+12. 
+13. 
+14. 
+
+*** basic loading and playback                                :play:buffer:
+
 #+BEGIN_SRC clojure :results silent
 (def goldberg-slow (load-sample "/Users/b/Google Drive/Audio_uploads/wav-file-uploads/goldberg-slow-mono.wav"))
 
@@ -67,66 +137,66 @@
 #+END_SRC
 
 #+BEGIN_SRC clojure :results silent
-(play)
-;; (play 1)
-#+END_SRC
-
-*** load all apollo soundfiles into overtone
-:PROPERTIES:
-:ID:       C99A4AE2-B22E-4F21-88B8-E64B3CC4D6E2
-:END:
-**** load
-#+BEGIN_SRC clojure :results silent
-(def path-to-sounds "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/")
-(def path-to-mono (str path-to-sounds "sounds/all-mono/"))
+  ;; (in-ns 'user)
+  (play)
 #+END_SRC
 
 #+BEGIN_SRC clojure
-  (def variation1 (load-sample (str path-to-mono "apollo-variation1-mono.wav")))
-  (def variation2 (load-sample (str path-to-mono "apollo-variation2-mono.wav")))
-  (def apotheose (load-sample (str path-to-mono "apotheose-mono.wav")))
-  (def calliope (load-sample (str path-to-mono "calliope-mono.wav")))
-  (def coda (load-sample (str path-to-mono "coda-mono.wav")))
-  (def yancey  (load-sample (str path-to-mono "how-long-slowest-mono.wav")))
-  (def naissance (load-sample (str path-to-mono "naissance-mono.wav")))
-  (def pas-daction (load-sample (str path-to-mono "pas-d'action-mono.wav")))
-  (def pas-deux (load-sample (str path-to-mono "pas-de-deux-mono.wav")))
-  (def polymnie (load-sample (str path-to-mono "polymnie-mono.wav")))
-  (def terpsichore (load-sample (str path-to-mono "terpsichore-mono.wav")))
+  (def violin-solo-var1 (play 0))
 #+END_SRC
 
-#+RESULTS:
-: #'user/variation1#'user/variation2#'user/apotheose#'user/calliope#'user/coda#'user/yancey#'user/naissance#'user/pas-daction#'user/pas-deux#'user/polymnie#'user/terpsichore
-**** load single buffers
 #+BEGIN_SRC clojure :results silent
-(def variation1 (load-sample (str path-to-mono "apollo-variation1-mono.wav")))
+  (def bjork-chords-var2 (play 1))
 #+END_SRC
 
-#+BEGIN_SRC clojure
-(def yancey (load-sample "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/how-long-slowest-mono.wav"))
-
+#+BEGIN_SRC clojure :results silent
+  (def pickup-flipside-apoth   (play 2))
 #+END_SRC
 
-**** shorthand buffer mnemonics
-Where should we put Goldberg?
-0.
-1. 
-2. 
+#+BEGIN_SRC clojure :results silent
+  (def spiky-triplets-calliope   (play 3))
+#+END_SRC
 
-0) solo violin (variation1)
-1) big forte three chords (open-closed fist--variation2)
-2) "morendo" (apotheose)
-3) spikey 6/8 (calliope)
-4) uptemp coda (flipside, pre-apotheose)
-5) yancey 
-6) very opening, string sixteenth dotted-eighth (naissance)
-7) gentle, pre pas-de-deux (pas d'action)
-8) gradual tenutos (pas-de-deux)
-9) bright, sixteenth note runs (polymnie)
-10) spiky sixteenth dotted-eighth (terpsichore)
-11) 
+#+BEGIN_SRC clojure :results silent
+  (def uptempo-coda (play 4))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+  (def yanc (play 5))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+  (def opening-unison-naissance (play 6))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+      (def gentle-predeux-action         (play 7))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+  (def pasdeux (play 8))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+  (def scherzic-polymnie (play 9))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+  (def spiky-terpsichore (play 10))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+  (def gold-slow (play 11))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+  (def irma-mp3 (play 12))
+
+#+END_SRC
 
 *** various buffer infos
+
+**** buffer id
 #+BEGIN_SRC clojure 
 (buffer-id variation1)
 (buffer-id variation2)
@@ -139,30 +209,332 @@ Where should we put Goldberg?
 (buffer-id pas-deux)
 (buffer-id polymnie)
 (buffer-id terpsichore)
+(buffer-id goldberg-slow)
+(buffer-id irma)
 #+END_SRC
 
 #+RESULTS:
-: 12345678910
+: 123456789101112
 
+**** [#A] full info
+#+BEGIN_SRC clojure :results output
+(for [name [variation1 variation2 apotheose calliope coda yancey naissance pas-daction pas-deux polymnie terpsichore goldberg-slow irma]]
+(do  (pprint name) (println)))
+#+END_SRC
 
-#+BEGIN_SRC clojure
-(buffer-info variation1)
-(buffer-info variation2)
-(buffer-info apotheose)
-(buffer-info calliope)
-(buffer-info coda)
-(buffer-info yancey)
-(buffer-info naissance)
-(buffer-info pas-daction)
-(buffer-info pas-deux)
-(buffer-info polymnie)
-(buffer-info terpsichore)
+#+RESULTS:
+#+begin_example
+{:id 1,
+ :size 7658496,
+ :n-channels 1,
+ :rate 44100.0,
+ :status #<Atom@4bd2aa6c: :live>,
+ :path
+ "/Users/b/Dropbox/AB-local/sc-sounds/all-mono/apollo-variation1-mono.wav",
+ :args {},
+ :name "apollo-variation1-mono.wav",
+ :rate-scale 1.0,
+ :duration 173.66204081632654,
+ :n-samples 7658496}
+
+{:id 2,
+ :size 7216896,
+ :n-channels 1,
+ :rate 44100.0,
+ :status #<Atom@608be141: :live>,
+ :path
+ "/Users/b/Dropbox/AB-local/sc-sounds/all-mono/apollo-variation2-mono.wav",
+ :args {},
+ :name "apollo-variation2-mono.wav",
+ :rate-scale 1.0,
+ :duration 163.64843537414967,
+ :n-samples 7216896}
+
+{:id 3,
+ :size 8620032,
+ :n-channels 1,
+ :rate 44100.0,
+ :status #<Atom@4d530c8a: :live>,
+ :path
+ "/Users/b/Dropbox/AB-local/sc-sounds/all-mono/apotheose-mono.wav",
+ :args {},
+ :name "apotheose-mono.wav",
+ :rate-scale 1.0,
+ :duration 195.4655782312925,
+ :n-samples 8620032}
+
+{:id 4,
+ :size 4876288,
+ :n-channels 1,
+ :rate 44100.0,
+ :status #<Atom@142fc985: :live>,
+ :path
+ "/Users/b/Dropbox/AB-local/sc-sounds/all-mono/calliope-mono.wav",
+ :args {},
+ :name "calliope-mono.wav",
+ :rate-scale 1.0,
+ :duration 110.57342403628118,
+ :n-samples 4876288}
+
+{:id 5,
+ :size 7805824,
+ :n-channels 1,
+ :rate 44100.0,
+ :status #<Atom@3ad9b505: :live>,
+ :path "/Users/b/Dropbox/AB-local/sc-sounds/all-mono/coda-mono.wav",
+ :args {},
+ :name "coda-mono.wav",
+ :rate-scale 1.0,
+ :duration 177.0028117913832,
+ :n-samples 7805824}
+
+{:id 6,
+ :size 12036573,
+ :n-channels 1,
+ :rate 44100.0,
+ :status #<Atom@135beb7c: :live>,
+ :path
+ "/Users/b/Dropbox/AB-local/sc-sounds/all-mono/how-long-slowest-mono.wav",
+ :args {},
+ :name "how-long-slowest-mono.wav",
+ :rate-scale 1.0,
+ :duration 272.9381632653061,
+ :n-samples 12036573}
+
+{:id 7,
+ :size 12697600,
+ :n-channels 1,
+ :rate 44100.0,
+ :status #<Atom@57f1c1d: :live>,
+ :path
+ "/Users/b/Dropbox/AB-local/sc-sounds/all-mono/naissance-mono.wav",
+ :args {},
+ :name "naissance-mono.wav",
+ :rate-scale 1.0,
+ :duration 287.9274376417234,
+ :n-samples 12697600}
+
+{:id 8,
+ :size 12649472,
+ :n-channels 1,
+ :rate 44100.0,
+ :status #<Atom@34c40340: :live>,
+ :path
+ "/Users/b/Dropbox/AB-local/sc-sounds/all-mono/pas-daction-real-mono.wav",
+ :args {},
+ :name "pas-daction-real-mono.wav",
+ :rate-scale 1.0,
+ :duration 286.8360997732426,
+ :n-samples 12649472}
+
+{:id 9,
+ :size 10633344,
+ :n-channels 1,
+ :rate 44100.0,
+ :status #<Atom@1216892f: :live>,
+ :path
+ "/Users/b/Dropbox/AB-local/sc-sounds/all-mono/pas-de-deux-mono1.wav",
+ :args {},
+ :name "pas-de-deux-mono1.wav",
+ :rate-scale 1.0,
+ :duration 241.11891156462585,
+ :n-samples 10633344}
+
+{:id 10,
+ :size 3202816,
+ :n-channels 1,
+ :rate 44100.0,
+ :status #<Atom@1e768dc8: :live>,
+ :path
+ "/Users/b/Dropbox/AB-local/sc-sounds/all-mono/polymnie-mono.wav",
+ :args {},
+ :name "polymnie-mono.wav",
+ :rate-scale 1.0,
+ :duration 72.62621315192743,
+ :n-samples 3202816}
+
+{:id 11,
+ :size 5381632,
+ :n-channels 2,
+ :rate 44100.0,
+ :status #<Atom@68de4551: :live>,
+ :path
+ "/Users/b/Dropbox/AB-local/sc-sounds/all-mono/terpsichore-mono.wav",
+ :args {},
+ :name "terpsichore-mono.wav",
+ :rate-scale 1.0,
+ :duration 122.03247165532879,
+ :n-samples 10763264}
+
+{:id 12,
+ :size 8138240,
+ :n-channels 1,
+ :rate 44100.0,
+ :status #<Atom@4446018d: :live>,
+ :path
+ "/Users/b/Google Drive/Audio_uploads/wav-file-uploads/goldberg-slow-mono.wav",
+ :args {},
+ :name "goldberg-slow-mono.wav",
+ :rate-scale 1.0,
+ :duration 184.540589569161,
+ :n-samples 8138240}
+
+{:id 13,
+ :size 7564032,
+ :n-channels 1,
+ :rate 44100.0,
+ :status #<Atom@5531d516: :live>,
+ :path "/Users/b/Dropbox/AB-local/sc-sounds/full-time-mono.wav",
+ :args {},
+ :name "full-time-mono.wav",
+ :rate-scale 1.0,
+ :duration 171.52,
+ :n-samples 7564032}
+
+#+end_example
+
+**** basic buffer-info                                       :buffer:info:
+#+BEGIN_SRC clojure :results output
+  (for [name [variation1 variation2 apotheose calliope coda yancey naissance pas-daction pas-deux polymnie terpsichore goldberg-slow irma]]
+  (do  (pprint (buffer-info name)) (println name) (println)))
+
+  ;; (buffer-info variation1)
+  ;; (buffer-info variation2)
+  ;; (buffer-info apotheose)
+  ;; (buffer-info calliope)
+  ;; (buffer-info coda)
+  ;; (buffer-info yancey)
+  ;; (buffer-info naissance)
+  ;; (buffer-info pas-daction)
+  ;; (buffer-info pas-deux)
+  ;; (buffer-info polymnie)
+  ;; (buffer-info terpsichore)
 
 #+END_SRC
 
 #+RESULTS:
-: #<buffer-info: 173.662041s mono 0>#<buffer-info: 163.648435s mono 1>#<buffer-info: 195.465578s mono 2>#<buffer-info: 110.573424s mono 3>#<buffer-info: 177.002812s mono 4>#<buffer-info: 272.938163s mono 5>#<buffer-info: 287.927438s mono 6>#<buffer-info: 286.836100s stereo 7>#<buffer-info: 241.118912s stereo 8>#<buffer-info: 72.626213s mono 9>#<buffer-info: 122.032472s stereo 10>
+#+begin_example
+{:id 0,
+ :size 7658496,
+ :n-channels 1,
+ :rate 44100.0,
+ :n-samples 7658496,
+ :rate-scale 1.0,
+ :duration 173.66204081632654}
+#<buffer[live]: apollo-variation1-mono.wav 173.662041s mono 0>
 
+{:id 1,
+ :size 7216896,
+ :n-channels 1,
+ :rate 44100.0,
+ :n-samples 7216896,
+ :rate-scale 1.0,
+ :duration 163.64843537414967}
+#<buffer[live]: apollo-variation2-mono.wav 163.648435s mono 1>
+
+{:id 2,
+ :size 8620032,
+ :n-channels 1,
+ :rate 44100.0,
+ :n-samples 8620032,
+ :rate-scale 1.0,
+ :duration 195.4655782312925}
+#<buffer[live]: apotheose-mono.wav 195.465578s mono 2>
+
+{:id 3,
+ :size 4876288,
+ :n-channels 1,
+ :rate 44100.0,
+ :n-samples 4876288,
+ :rate-scale 1.0,
+ :duration 110.57342403628118}
+#<buffer[live]: calliope-mono.wav 110.573424s mono 3>
+
+{:id 4,
+ :size 7805824,
+ :n-channels 1,
+ :rate 44100.0,
+ :n-samples 7805824,
+ :rate-scale 1.0,
+ :duration 177.0028117913832}
+#<buffer[live]: coda-mono.wav 177.002812s mono 4>
+
+{:id 5,
+ :size 12036573,
+ :n-channels 1,
+ :rate 44100.0,
+ :n-samples 12036573,
+ :rate-scale 1.0,
+ :duration 272.9381632653061}
+#<buffer[live]: how-long-slowest-mono.wav 272.938163s mono 5>
+
+{:id 6,
+ :size 12697600,
+ :n-channels 1,
+ :rate 44100.0,
+ :n-samples 12697600,
+ :rate-scale 1.0,
+ :duration 287.9274376417234}
+#<buffer[live]: naissance-mono.wav 287.927438s mono 6>
+
+{:id 7,
+ :size 12649472,
+ :n-channels 1,
+ :rate 44100.0,
+ :n-samples 12649472,
+ :rate-scale 1.0,
+ :duration 286.8360997732426}
+#<buffer[live]: pas-daction-real-mono.wav 286.836100s mono 7>
+
+{:id 8,
+ :size 10633344,
+ :n-channels 1,
+ :rate 44100.0,
+ :n-samples 10633344,
+ :rate-scale 1.0,
+ :duration 241.11891156462585}
+#<buffer[live]: pas-de-deux-mono1.wav 241.118912s mono 8>
+
+{:id 9,
+ :size 3202816,
+ :n-channels 1,
+ :rate 44100.0,
+ :n-samples 3202816,
+ :rate-scale 1.0,
+ :duration 72.62621315192743}
+#<buffer[live]: polymnie-mono.wav 72.626213s mono 9>
+
+{:id 10,
+ :size 5381632,
+ :n-channels 2,
+ :rate 44100.0,
+ :n-samples 10763264,
+ :rate-scale 1.0,
+ :duration 122.03247165532879}
+#<buffer[live]: terpsichore-mono.wav 122.032472s stereo 10>
+
+{:id 11,
+ :size 8138240,
+ :n-channels 1,
+ :rate 44100.0,
+ :n-samples 8138240,
+ :rate-scale 1.0,
+ :duration 184.540589569161}
+#<buffer[live]: goldberg-slow-mono.wav 184.540590s mono 11>
+
+{:id 12,
+ :size 7564032,
+ :n-channels 1,
+ :rate 44100.0,
+ :n-samples 7564032,
+ :rate-scale 1.0,
+ :duration 171.52}
+#<buffer[live]: full-time-mono.wav 171.520000s mono 12>
+
+#+end_example
+
+
+**** buffer-size
 #+BEGIN_SRC clojure
 (buffer-size variation1)
 (buffer-size variation2)
@@ -184,10 +556,12 @@ Where should we put Goldberg?
 (def irma (load-sample "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/full-time-mono.wav"))
 #+END_SRC
 
-
 *** link to sample directories
 [[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/]]
 ** keyboard macro to stop sound
+:PROPERTIES:
+:ID:       94F9064E-DB8E-4897-A6C2-94467527BAED
+:END:
 
 #+BEGIN_SRC elisp :results silent
 (fset 'kill-overtone-from-buffer
@@ -293,10 +667,13 @@ C-l			;; recenter-top-bottom
 | Channel-one | KNOBS | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | PADS | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Channel-two | KNOBS | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | PADS | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 * begin making sound with sound files
+** note: most of this current (apollo-overtone?) file is now to be archived
 
-** note: most of this file is now to be archived
 see final-tgrain-controller-abstraction.org 
 [[id:72B246E0-F6CF-4AC8-8113-C1CE8F83572B][preliminaries]]
+
+And consider closing this file? Useful at least to refer back to
+buffer info
 ** consider what synths to use
 [[id:94621238-5BF8-497B-96CE-8E1CB951311A][define synths (taken from =granular-synth-focused.org=)]]
 
@@ -305,7 +682,6 @@ see final-tgrain-controller-abstraction.org
 - tgrains-line-synth ::
 - slow-grain-reverb ::
 - general-trand-synth- :: 
-
 
 ** def an instrument for playing with parameters to TGrains
 :PROPERTIES:
@@ -353,7 +729,6 @@ examples of centerpos arguments and trate arguments!
 :PROPERTIES:
 :ID:       EEEBABF7-6A2A-4B1A-9D57-D1C8E0D42E72
 :END:
-
 ** preliminaries
 - define atoms for two sets of channels and CC messages (see 'restart'
   section above)
