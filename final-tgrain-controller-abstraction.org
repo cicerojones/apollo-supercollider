@@ -1,8 +1,127 @@
-* preliminaries
+* Misc. notes and tangents on tgrain project
+** [#B] (fun!) create JVM timings using Sleeps and future?
+*** process for functioning automated playback fn
+**** choose buffer for playback
+#+BEGIN_SRC clojure :results silent
+(def var1 (general-tgrains-synth 0))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(def var2 (general-tgrains-synth 1))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(def apoth (general-tgrains-synth 2))
+#+END_SRC
+**** experiment with ctl of playing back buffer
+#+BEGIN_SRC clojure :results silent
+(ctl var1 :centerpos 10)
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(ctl var1 :centerpos @current-val)
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+  (do (swap! current-val inc)
+      (ctl var1 :centerpos @current-val))
+#+END_SRC
+
+
+#+BEGIN_SRC clojure :results silent
+  (do (Thread/sleep 5000)
+      (swap! current-val inc)
+      (ctl var1 :centerpos @current-val))
+#+END_SRC
+
+**** [#A] create functions and futures for repeated control
+***** warnings
+Sample must be playing, of course!
+
+Then, you can either call the function or try to realize the future?
+But doing so in the REPL will, of course, block. But doing so from
+org-babel will nrepl time-out and give you back control of your org
+file.
+
+However! It will eat your connection to the cider-repl until...?
+
+Reconsider calling the below with repeatedly 200 times!
+
+For example, this will take 200 * 5 seconds = 1000 seconds = approx 16
+mins but will keep on moving through the piece?
+
+#+BEGIN_SRC clojure :results silent
+;; will block the REPL!
+;; use a future??
+  (defn play-var1 []
+    (repeatedly 200 #(do (Thread/sleep 5000)
+                        (swap! current-val inc)
+                        (ctl var1 :centerpos @current-val))))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(play-var1)
+#+END_SRC
+
+***** does using a future do anything helpful?
+
+Futures block once they are dereferenced, it seems?
+
+#+BEGIN_SRC clojure
+  (def var2-future
+    (future 
+      (repeatedly 10 #(do (Thread/sleep 5000)
+                           (swap! current-val inc)
+                           (ctl var2 :centerpos @current-val)))))
+#+END_SRC
+
+#+RESULTS:
+: #'user/var2-future
+
+#+BEGIN_SRC clojure :results silent
+;; need to reset current-val if previously used!
+(def current-val (atom 0))
+
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+@var2-future
+#+END_SRC
+
+***** abstract out number of repeats and "active-synth"
+Hard codes "current val" necessarily, since that is the var we will be
+wanting to save values from??
+
+ #+BEGIN_SRC clojure :results silent
+  (defn my-ctl-line [active-synth sleep-time repeats]
+    (repeatedly repeats
+                #(do (Thread/sleep sleep-time)
+                     (swap! current-val inc)
+                     (ctl active-synth :centerpos @current-val))))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+  (do
+    (def apoth (general-tgrains-synth 2 :trate 0.5))
+    (reset! current-val 0)
+    (my-ctl-line apoth 3000 10))
+#+END_SRC
+** preliminaries
 :PROPERTIES:
 :ID:       72B246E0-F6CF-4AC8-8113-C1CE8F83572B
 :END:
 [[id:F50F4B96-20C5-4F82-A29D-88791760D5F5][load all apollo soundfiles into overtone]]
+** refactor event handlers!
+*** TODO for refactoring keyboard and CC event-handlers
+- to take synth ugen as argument--must be a macro??
+- print out message with value to STOUT
+- fix "no matching clause" errors for (15,
+- be able to add and remove event-handlers more gracefully
+*** MASTER CONTROL-CHANGE EVENT HANDLER needed!
+Saves values of =current-val= for use as =centerpos= arguments
+
+see [[id:D5F733E4-1698-40FB-8B24-D634FD7B39A5][general CC mesages]] above
+
 * define synths (taken from =granular-synth-focused.org=)
 :PROPERTIES:
 :ID:       94621238-5BF8-497B-96CE-8E1CB951311A
@@ -37,7 +156,9 @@ see below
 from granular-synth focused 
 ** general-trand synth
 [[id:74504A58-C963-4B11-AEE5-6411D5A37CF4][general-tgrains with t-randomness]]
-
+** some new granular synths in steps.org
+ mouse-rand-grain1 and more better below this one!
+[[id:6846EBE5-14EA-4655-8855-1F674FCBAB1D][mouse-rand-grain1]]
 * load samples with various synths
 ** load all other apollo samples--see link
 [[id:C99A4AE2-B22E-4F21-88B8-E64B3CC4D6E2][load all apollo soundfiles into overtone]]
@@ -111,11 +232,13 @@ from granular-synth focused
 #+BEGIN_SRC clojure :results silent
 (ctl slowg-pasdeux :centerpos 10)
 #+END_SRC
-* [#A] define refs (for full composing with high-level granular synth)
+* [#B] define refs (for full composing with high-level granular synth)
 :PROPERTIES:
 :ID:       EEC0B1AC-D5F4-40F8-ACDF-629441E38812
 :END:
+These refs are used by...which event handlers???
 ** all refs in one block
+
 #+BEGIN_SRC clojure :results silent
 ;;; save "centerpos" values
   (def liked-values (atom []))
@@ -142,7 +265,7 @@ from granular-synth focused
 - trate-ref :: set rate of trigger of grains
 - durnumerator-ref :: 
 
-* [#A] define utility and library functions
+* [#B] define utility and library functions
 ** record-val (to 'liked-values' ref); my maprange; round2; read-ugen
 
 #+BEGIN_SRC clojure
@@ -166,7 +289,7 @@ from granular-synth focused
 #+RESULTS:
 : #'user/record-val#'user/maprange#'user/read-ugen
 
-** define MIDI interface abstractions and original models of event handlers
+** design MIDI interface abstractions and original models of event handlers
 *** event handler pad and knob abstractions
 See [[id:B859EFB9-72F9-405E-9E1F-A0BF75022781][Set four knobs for amp and centerpos across goldberg and yancey]]
 for examples of how to use reset-knob and swap-pad
@@ -180,7 +303,7 @@ takes:
 - midi-channel :: send messages from one channel or another
 - scale :: scale the values being sent from the knob
 
-*** specific event handlers deprecated?
+*** old specific event handlers deprecated?
 #+BEGIN_SRC clojure :results silent
   (defn old-reset-knob [synth synth-param knob-number place midi-channel & {:keys [scale]
                                                                         :or {scale 1}}]
@@ -199,11 +322,11 @@ takes:
                     (ctl synth (keyword synth-param) (deref place))
                     (println (str synth-param pad-number " : ") (deref place)))))))
 #+END_SRC
-*** keyboard keys and transport event handlers, with scaling (hard codes synth!)
+** keyboard keys and transport event handlers, with scaling (hard codes synth!)
 :PROPERTIES:
 :ID:       5B64A0AA-C2B5-468A-A39F-4DC5D3EF55D0
 :END:
-**** general CC mesages (save values; change dst-hi range)
+*** SAVE VALUES event handler
 :PROPERTIES:
 :ID:       D5F733E4-1698-40FB-8B24-D634FD7B39A5
 :END:
@@ -224,8 +347,7 @@ Problems result from using =case= /but not covering all cases!/
             ::record-value-handler)
 
 #+END_SRC
-
-
+*** CHANGE DST-HI RANGE event handler
 #+BEGIN_SRC clojure :results silent
 ;; determine maprange's destination high point, thus changing maprange's scale
   (on-event [:midi :control-change]
@@ -239,7 +361,7 @@ Problems result from using =case= /but not covering all cases!/
 
 #+RESULTS:
 : :added-async-handler:added-async-handler
-
+*** remove above event handlers
 #+BEGIN_SRC clojure :results silent
 (remove-event-handler ::record-value-handler)
 #+END_SRC
@@ -248,7 +370,9 @@ Problems result from using =case= /but not covering all cases!/
 (remove-event-handler ::test-range-high)
 #+END_SRC
 
-**** control playback of synth saved in =gold= only!
+*** example of controlling playback of synth saved in =gold= only!
+
+**** control centerpos with note-on
 #+BEGIN_SRC clojure
 ;; determine "centerpos" based on MIDI keyboard notes
   (on-event [:midi :note-on]
@@ -258,7 +382,10 @@ Problems result from using =case= /but not covering all cases!/
                     (ctl gold :centerpos val)
                     (println (round2 val 2)))))
             ::set-current-val-scale-and-play)
+#+END_SRC
 
+**** control trate with knob 3
+#+BEGIN_SRC clojure :results silent
 ;; determine trate 
   (on-event [:midi :control-change]
             (fn [{note :note vel :velocity}]
@@ -267,7 +394,10 @@ Problems result from using =case= /but not covering all cases!/
                         (ctl gold :trate (maprange [0 127] [0.01 2] vel))
                         (println vel))))
             ::set-trate-and-play)
+#+END_SRC
 
+**** control dur-numerator with knob 4
+#+BEGIN_SRC clojure :results silent
 ;; determine dur-numerator
   (on-event [:midi :control-change]
             (fn [{note :note vel :velocity}]
@@ -278,21 +408,10 @@ Problems result from using =case= /but not covering all cases!/
             ::set-durnum-and-play)
 #+END_SRC
 
-* refactor event handlers!
-** TODO for refactoring keyboard and CC event-handlers
-- to take synth ugen as argument--must be a macro??
-- print out message with value to STOUT
-- fix "no matching clause" errors for (15,
-- be able to add and remove event-handlers more gracefully
-** MASTER CONTROL-CHANGE EVENT HANDLER needed!
-Saves values of =current-val= for use as =centerpos= arguments
-
-see [[id:D5F733E4-1698-40FB-8B24-D634FD7B39A5][general CC mesages]] above
-
-* [#A] note-on ON-EVENTER (note-on event handler for any active synth)
+* [#A] note-on ON-EVENTER (note-on event handler for ANY active synth!)
 ** some notes on the function
 
-- Should be "note-on-eventer"
+- Should be "note-on-eventer" with more explanation
 - hard-codes =current-val= as the "centerpos determiner" value
 - hard-codes =dst-hi= for the maprange hi
   - should make some use of buffer-duration??
@@ -324,6 +443,8 @@ see [[id:D5F733E4-1698-40FB-8B24-D634FD7B39A5][general CC mesages]] above
 #+END_SRC
 
 ** instantiate general-tgrains for note-on-eventer control
+Step 1. Must activate a synth
+Step 2. Begin to control with with the note-on-eventer
 #+BEGIN_SRC clojure :results silent
 (def var1-noline (general-tgrains-synth :buffer 0 :centerpos 1))
 #+END_SRC
@@ -393,7 +514,7 @@ specific use for this event-handler!
 (remove-event-handler ::var1-trate-change)
 #+END_SRC
 
-** more general CC handler
+* more general CC handler with defmacro
 #+BEGIN_SRC clojure :results silent
   (defmacro cc-param-on-eventer [active-synth a-ref tgrain-param knob-num dst-lo-ref dst-hi-ref double-colon-name]
     (on-event [:midi :control-change]
@@ -415,7 +536,7 @@ specific use for this event-handler!
 #+BEGIN_SRC clojure :results silent
 (remove-event-handler ::more-general-trate-scaled)
 #+END_SRC
-*** model definitions for refactoring as more abstract
+** model definitions for refactoring as more abstract
 #+BEGIN_SRC clojure :results silent
   (defn cc-param-on-eventer1 [active-synth knob-num double-colon-name]
     (on-event [:midi :control-change]
@@ -434,112 +555,6 @@ specific use for this event-handler!
 #+BEGIN_SRC clojure :results silent
 (remove-event-handler ::simpler-hardcoded-cc)
 #+END_SRC
-*** ultimately use a ref for scaling?
-
-* [#B] (fun!) create JVM timings using Sleeps and future?
-** process for functioning automated playback fn
-*** choose buffer for playback
-#+BEGIN_SRC clojure :results silent
-(def var1 (general-tgrains-synth 0))
-#+END_SRC
-
-#+BEGIN_SRC clojure :results silent
-(def var2 (general-tgrains-synth 1))
-#+END_SRC
-
-#+BEGIN_SRC clojure :results silent
-(def apoth (general-tgrains-synth 2))
-#+END_SRC
-*** experiment with ctl of playing back buffer
-#+BEGIN_SRC clojure :results silent
-(ctl var1 :centerpos 10)
-#+END_SRC
-
-#+BEGIN_SRC clojure :results silent
-(ctl var1 :centerpos @current-val)
-#+END_SRC
-
-#+BEGIN_SRC clojure :results silent
-  (do (swap! current-val inc)
-      (ctl var1 :centerpos @current-val))
-#+END_SRC
 
 
-#+BEGIN_SRC clojure :results silent
-  (do (Thread/sleep 5000)
-      (swap! current-val inc)
-      (ctl var1 :centerpos @current-val))
-#+END_SRC
 
-*** [#A] create functions and futures for repeated control
-**** warnings
-Sample must be playing, of course!
-
-Then, you can either call the function or try to realize the future?
-But doing so in the REPL will, of course, block. But doing so from
-org-babel will nrepl time-out and give you back control of your org
-file.
-
-However! It will eat your connection to the cider-repl until...?
-
-Reconsider calling the below with repeatedly 200 times!
-
-For example, this will take 200 * 5 seconds = 1000 seconds = approx 16
-mins but will keep on moving through the piece?
-
-#+BEGIN_SRC clojure :results silent
-;; will block the REPL!
-;; use a future??
-  (defn play-var1 []
-    (repeatedly 200 #(do (Thread/sleep 5000)
-                        (swap! current-val inc)
-                        (ctl var1 :centerpos @current-val))))
-#+END_SRC
-
-#+BEGIN_SRC clojure :results silent
-(play-var1)
-#+END_SRC
-
-**** does using a future do anything helpful?
-
-Futures block once they are dereferenced, it seems?
-
-#+BEGIN_SRC clojure
-  (def var2-future
-    (future 
-      (repeatedly 10 #(do (Thread/sleep 5000)
-                           (swap! current-val inc)
-                           (ctl var2 :centerpos @current-val)))))
-#+END_SRC
-
-#+RESULTS:
-: #'user/var2-future
-
-#+BEGIN_SRC clojure :results silent
-;; need to reset current-val if previously used!
-(def current-val (atom 0))
-
-#+END_SRC
-
-#+BEGIN_SRC clojure :results silent
-@var2-future
-#+END_SRC
-
-**** abstract out number of repeats and "active-synth"
-Hard codes "current val" necessarily, since that is the var we will be
-wanting to save values from??
-
- #+BEGIN_SRC clojure :results silent
-  (defn my-ctl-line [active-synth sleep-time repeats]
-    (repeatedly repeats
-                #(do (Thread/sleep sleep-time)
-                     (swap! current-val inc)
-                     (ctl active-synth :centerpos @current-val))))
-#+END_SRC
-
-#+BEGIN_SRC clojure :results silent
-  (do
-    (def apoth (general-tgrains-synth 2 :trate 0.5))
-    (reset! current-val 0)
-    (my-ctl-line apoth 3000 10))
-#+END_SRC

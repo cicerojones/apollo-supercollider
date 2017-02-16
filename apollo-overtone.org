@@ -170,7 +170,7 @@ Where should we put Goldberg?
 #+END_SRC
 
 #+BEGIN_SRC clojure :results silent
-      (def gentle-predeux-action         (play 7))
+(def gentle-predeux-action (play 7))
 #+END_SRC
 
 #+BEGIN_SRC clojure :results silent
@@ -533,7 +533,6 @@ Where should we put Goldberg?
 
 #+end_example
 
-
 **** buffer-size
 #+BEGIN_SRC clojure
 (buffer-size variation1)
@@ -670,7 +669,8 @@ C-l			;; recenter-top-bottom
 ** note: most of this current (apollo-overtone?) file is now to be archived
 
 see final-tgrain-controller-abstraction.org 
-[[id:72B246E0-F6CF-4AC8-8113-C1CE8F83572B][preliminaries]]
+[[id:72B246E0-F6CF-4AC8-8113-C1CE8F83572B][preliminaries]] this is really just loading apollo soundfiles as
+(probably already) done above. Move on to synthdefs below
 
 And consider closing this file? Useful at least to refer back to
 buffer info
