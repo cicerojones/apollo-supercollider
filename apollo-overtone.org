@@ -80,7 +80,7 @@
   (def polymnie (load-sample (str path-to-mono "polymnie-mono.wav")))
   (def terpsichore (load-sample (str path-to-mono "terpsichore-mono.wav")))
   ;; not in all-mono dir?
-  (def goldberg-slow (load-sample "/Users/b/Google Drive/Audio_uploads/wav-file-uploads/goldberg-slow-mono.wav"))
+  (def goldberg-slow (load-sample "~/Google Drive/Audio_uploads/wav-file-uploads/goldberg-slow-mono.wav"))
   (def irma (load-sample (str path-to-sounds "sounds/full-time-mono.wav")))
 
 
