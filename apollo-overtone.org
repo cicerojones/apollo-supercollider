@@ -1065,7 +1065,9 @@ But needs an event handler to actually respond to cc-messages! see
 :END:
 
 ** uses abstractions defined above--see 'steps'
-[[id:FC7DE6AF-7BCA-4E0F-B10C-19C7CD6E1B42][steps]] in more-advanced-overtone-exploring.org lays out a process of
+see some steps node somewhere (in more-advanced-overtone-exploring.org) 
+
+lays out a process of
 getting going with goldberg aria
 ** define control-change knobs for goldberg and Channel 1
 :PROPERTIES:
