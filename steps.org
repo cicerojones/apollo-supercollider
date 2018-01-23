@@ -77,7 +77,7 @@ of apollo-overtone in the apollo-supercollider github repo
 #+END_SRC
 ** Use MIDI controller with new random granular synths!
 [[id:EEC0B1AC-D5F4-40F8-ACDF-629441E38812][define refs (for full composing with high-level granular synth)]]
-* dated blocks of experiments
+* [#A] dated blocks of experiments
 :PROPERTIES:
 :DATE_CREATED: [2017-02-10 Fri 18:03]
 :END:
@@ -517,7 +517,8 @@ output from the control busses to the audio output busses?
 use busses as reverb effects processing?
 Consult the all-examples external and notation?? for fx- instances
 
-[[id:60552745-D635-4A59-859B-4B12D784EBE1][(nsovertone.examples.instruments.external]])
+Look at overtone examples
+(nsovertone.examples.instruments.external]
 
 ** understanding mechanices of server, nodes, groups, busses
 
@@ -683,16 +684,19 @@ Consult the all-examples external and notation?? for fx- instances
 #+END_SRC
 
 #+BEGIN_SRC clojure
-(demo 5
+(demo 10
         (let [src1      (sin-osc 440)
               src2      (sin-osc 880)
               root-trig (impulse:kr 10)
               t1        (pulse-divider:kr root-trig 20)
               t2        (pulse-divider:kr root-trig 10)]
-          (* 0.2
+          (* 100
              (+ (* (decay t1 0.1) src1)
                 (* (decay t2 0.1) src2)))))
   #+END_SRC
+
+  #+RESULTS:
+  : #<synth-node[loading]: quilbabel.core/audition-synth 46>
 
 #+BEGIN_SRC clojure :results silent
   (demo 10 (sin-osc (+ 1000 (* 600 (lf-noise0:kr 12))) 0.3))
@@ -757,11 +761,11 @@ Consult the all-examples external and notation?? for fx- instances
 *** ring modulation with resonz examples
  #+BEGIN_SRC clojure
  ;;(demo 10 (ring1 (* 0.4 (rlpf (resonz (saw) 1000 ) 1000 10)) (* 3 (lf-noise0 30))))
- (demo 30 (ring3 (* 10 (rlpf (resonz (saw) 100 ) 1000 10)) (* 3 (lf-noise0 100))))
+ (demo 30 (ring3 (* 100 (rlpf (resonz (saw) 100 ) 1000 10)) (* 3 (lf-noise0 100))))
  #+END_SRC
 
  #+RESULTS:
- : #<synth-node[loading]: user/audition-synth 42>
+ : #<synth-node[loading]: quilbabel.core/audition-synth 49>
 
 *** a many parametered inst template (for ring modulation experiment)
 
@@ -889,40 +893,64 @@ Consult the all-examples external and notation?? for fx- instances
 (def wurly-rand-II (mouse-rand-grain2 3))
 #+END_SRC
 
-** some ugen tests
+** [#A] some ugen tests
    :PROPERTIES:
    :DATE_CREATED: [2017-02-28 Tue 16:00]
    :END:
+
 #+BEGIN_SRC clojure :results silent
 (demo (pan2 (sin-osc)))
+#+END_SRC
 
-(demo 1 (pan2 (rlpf (saw) (line 20 6e3 0.5) 1)))
-(demo 1 (pan2 (comb-n (bpf (pink-noise) (line 20 6e3 0.5) 1) 0.4 0.3 0.5)))
+#+BEGIN_SRC clojure :results silent
+(demo 1 (pan2 (* 10 (rlpf (saw) (line 20 6e3 0.5) 1))))
+#+END_SRC
 
+#+BEGIN_SRC clojure :results silent
+(demo 0.75 (pan2 (* 30 (comb-n (bpf (pink-noise) (line 20 6e3 0.5) 1) 0.4 0.3 0.5))))
+#+END_SRC
 
-(demo 5 (pan2 (* 40 (bpf (pink-noise) 1000 0.01))))
-(demo 0.5 (pan2 (* 0.1 (klang [[1000 440 260]]))))
+#+BEGIN_SRC clojure :results silent
+(demo 5 (pan2 (* 400 (bpf (pink-noise) 1000 0.01))))
+#+END_SRC
 
-(demo 10 (pan2 (* 0.1 (+ (* 40 (bpf (pink-noise) 1000 0.01))
+#+BEGIN_SRC clojure :results silent
+(demo 5 (pan2 (* 10.1 (klang [[1000 440 260]]))))
+#+END_SRC
+
+#+BEGIN_SRC clojure :results silent
+(demo 10 (pan2 (* 10 (+ (* 40 (bpf (pink-noise) 1000 0.01))
                          (klang [(choose-n 4 (map #(+ % 200) (range 1 100)))])))))
+#+END_SRC
 
+#+BEGIN_SRC clojure :results value
 (rand-nth (map #(* % 10) (range 1 100)))
+#+END_SRC
 
-(demo 10 (pan2 (* 0.2 (+ (* 40 (bpf (pink-noise) (scale-range (rand) 0 1 500 1000) 0.01))
+#+RESULTS:
+: 850
+
+#+BEGIN_SRC clojure :results silent
+(demo 10 (pan2 (* 2 (+ (* 40 (bpf (pink-noise) (scale-range (rand) 0 1 500 1000) 0.01))
                          (klang [(choose-n 10 (map #(+ % 400) (range
                                                                1 ;;10
                                                                100 ;;1000
                                                                )))])))))
+#+END_SRC
 
+#+BEGIN_SRC clojure :results silent
+(demo 10 (pan2 (* 40 (comb-n (bpf (pink-noise) (line 20 6e3 10) 1) 0.9 0.3 0.5))))
+#+END_SRC
 
+#+BEGIN_SRC clojure :results silent
+(demo 5 (pan2 (* 20  (comb-n (bpf (saw (+ 100 (lf-noise0:kr))) (line 20 6e3 10) 1) 0.9 0.3 0.5))))
+#+END_SRC
 
+#+BEGIN_SRC clojure :results silent
+(demo 5 (pan2 (* 2.5  (saw (+ 400 (* 100 (lf-pulse:kr 10)))))))
+#+END_SRC
 
-(demo 10 (pan2 (comb-n (bpf (pink-noise) (line 20 6e3 10) 1) 0.9 0.3 0.5)))
-
-(demo 5 (pan2 (* 0.1  (comb-n (bpf (saw (+ 100 (lf-noise0:kr))) (line 20 6e3 10) 1) 0.9 0.3 0.5))))
-
-(demo 5 (pan2 (* 0.1  (saw (+ 400 (* 100 (lf-pulse:kr 10)))))))
-
+#+BEGIN_SRC clojure :results silent
 (stop)
 #+END_SRC
 ** improve abstraction for cc event handling
@@ -1618,7 +1646,9 @@ what was happening.
 C-c C-v g to go to the following block
 (can't evaluate a macro from a remote block?)
 
-#+CALL: cc-knob-scale-range-macro(active-synth cc-knob tar-lo tar-hi vel)
+Eliminate the explicit call tag for export purposes:
+
+cc-knob-scale-range-macro(active-synth cc-knob tar-lo tar-hi vel)
 ***** refs needed for this scaling function
 #+BEGIN_SRC clojure :results silent
 (def offset-ones (atom 0))
@@ -2386,6 +2416,9 @@ arise!
 #+END_SRC
 
 * configure your whole MIDI controller
+  :PROPERTIES:
+  :ID:       0DDA001F-5EAC-4E8F-A1D0-16EEDBF8F828
+  :END:
 ** axiom 8 cc knobs
 **** prepare incarnation samples
  #+CALL: load-incarnation-samples()
@@ -2633,14 +2666,13 @@ calculates track length but doesn't use it?
 | 71300 | 7323600.1 |
 
 * using OSC for communication with Processing
-
+** define an osc-server and listener
 #+BEGIN_SRC clojure 
 (def server (osc-server 55450))
 (osc-listen server (fn [msg] (println "Listener: " msg)) :debug)
 #+END_SRC
 
-** 
-* new section for supercollider bus examples
+* new section for supercollider bus examples                       :noexport:
 ** studio* at startup of overtone
 #+BEGIN_SRC clojure
 #atom[{:synth-group nil,
@@ -2693,7 +2725,10 @@ calculates track length but doesn't use it?
 #+end_example
 
 ** supercollider
-#+BEGIN_SRC sclang
+
+
+
+#+BEGIN_SRC sclang :tangle no
 SynthDef("tutorial-Rand", { Out.ar(0, SinOsc.ar(Rand(440, 660), 0, 0.2)) }).add;
 
 (
@@ -2765,8 +2800,3 @@ Dust.ar(density, mul, add)
 Impulse.ar(freq, phase, mul, add)
 AllpassC.ar(in, maxdelaytime, delaytime, decaytime, mul, add)
 #+END_SRC
-
-** overtone
-#+BEGIN_SRC clojure
-(defsynth 
-#+END_SRC   
