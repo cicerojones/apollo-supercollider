@@ -276,6 +276,7 @@ These refs are used by...which event handlers???
 (defn maprange [[a1 a2] [b1 b2] s]
 	(+ b1 (/ (* (- s a1) (- b2 b1)) (- a2 a1))))
 
+;; in more recent versions of overtone?
 (defn round2
   "Round a double to the given precision (number of significant digits)"
   [precision d]
@@ -465,6 +466,9 @@ Step 2. Begin to control with with the note-on-eventer
 
 * [#A] cc-change ON-EVENTER
 ** prepare to define function 
+   :PROPERTIES:
+   :ID:       254BF7C9-931F-4E30-AEC6-05990B46BE41
+   :END:
 Can set any ref to be used with any knob-num!
 Refs all come with a "-ref" name ending!
 
