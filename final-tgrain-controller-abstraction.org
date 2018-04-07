@@ -519,6 +519,9 @@ specific use for this event-handler!
 #+END_SRC
 
 * more general CC handler with defmacro
+  :PROPERTIES:
+  :ID:       18034CBE-5093-4083-8D7A-5E7027482FA4
+  :END:
 #+BEGIN_SRC clojure :results silent
   (defmacro cc-param-on-eventer [active-synth a-ref tgrain-param knob-num dst-lo-ref dst-hi-ref double-colon-name]
     (on-event [:midi :control-change]
