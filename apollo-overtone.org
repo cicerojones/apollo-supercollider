@@ -588,7 +588,7 @@ C-l			;; recenter-top-bottom
 
 #+END_SRC
 
-** confirm MIDI controller connected
+** [#A] confirm MIDI controller connected
 
 #+BEGIN_SRC clojure :results silent
 (midi-connected-devices)
