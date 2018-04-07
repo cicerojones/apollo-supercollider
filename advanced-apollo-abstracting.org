@@ -441,6 +441,9 @@ general-trand-synth2 defined below
 #+END_SRC
 
 * develop abstraction for controlling parameters of any granular synth
+  :PROPERTIES:
+  :ID:       C9CED1FB-43C5-4DBD-836E-78980A17AC02
+  :END:
 ** required functions
 [[id:BCB30277-2E56-44FB-A36F-F985A0473C9B][define knob and pad changes with more sophisticated passing]]
 
