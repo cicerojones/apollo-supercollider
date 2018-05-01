@@ -1,6 +1,7 @@
 * Apollo-overtone restart essentials
 :PROPERTIES:
 :ID:       DFFB3F5A-370C-4D2A-BA61-685E4B73CCAC
+:VISIBILITY: content
 :END:
 ** stop all sound
 
@@ -606,47 +607,7 @@ C-l			;; recenter-top-bottom
 :PROPERTIES:
 :ID:       B3DB9C3B-4F2B-40D4-B16C-DF3047C968D9
 :END:
-#+BEGIN_SRC clojure :results silent
-;; channel one control change knobs
-  (def cc1-1 (atom 0))
-  (def cc2-1 (atom 0))
-  (def cc3-1 (atom 0))
-  (def cc4-1 (atom 0))
-  (def cc5-1 (atom 0))
-  (def cc6-1 (atom 0))
-  (def cc7-1 (atom 0))
-  (def cc8-1 (atom 0))
 
-;; channel two control change knobs
-  (def cc1-2 (atom 0))
-  (def cc2-2 (atom 0))
-  (def cc3-2 (atom 0))
-  (def cc4-2 (atom 0))
-  (def cc5-2 (atom 0))
-  (def cc6-2 (atom 0))
-  (def cc7-2 (atom 0))
-  (def cc8-2 (atom 0))
-
-;; channel one pads
-  (def pad1-1 (atom 0))
-  (def pad2-1 (atom 0))
-  (def pad3-1 (atom 0))
-  (def pad4-1 (atom 0))
-  (def pad5-1 (atom 0))
-  (def pad6-1 (atom 0))
-  (def pad7-1 (atom 0))
-  (def pad8-1 (atom 0))
-
-;; channel two pads
-  (def pad1-2 (atom 0))
-  (def pad2-2 (atom 0))
-  (def pad3-2 (atom 0))
-  (def pad4-2 (atom 0))
-  (def pad5-2 (atom 0))
-  (def pad6-2 (atom 0))
-  (def pad7-2 (atom 0))
-  (def pad8-2 (atom 0))
-#+END_SRC
 
 ** monitor current state of refs
 :PROPERTIES:
@@ -728,6 +689,7 @@ examples of centerpos arguments and trate arguments!
 * make abstraction for playing with CC and granular synth
 :PROPERTIES:
 :ID:       EEEBABF7-6A2A-4B1A-9D57-D1C8E0D42E72
+:VISIBILITY: content
 :END:
 ** preliminaries
 - define atoms for two sets of channels and CC messages (see 'restart'
@@ -788,6 +750,7 @@ examples of centerpos arguments and trate arguments!
 #+BEGIN_SRC clojure :results silent
 (str "cc1-1: " @cc1-1 " cc2-1: " @cc2-1 " cc3-1: " @cc3-1 " cc4-1: " @cc4-1 " cc5-1: " @cc5-1 " cc6-1: " @cc6-1 " cc7-1: " @cc7-1 " cc8-1: " \n @cc8-1 " cc1-2: " @cc1-2 @cc2-2 @cc3-2 @cc4-2 @cc5-2 @cc6-2 @cc7-2 @cc8-2)
 #+END_SRC
+
 
 *** println CC-knob values and assign to SLOW-GRAIN-REVERB parameters
 
@@ -981,6 +944,9 @@ Requires slow-grain-reverb to be playing
 #+END_SRC
 
 ** [#C] use "reset-knob" and "swap-pad" to control "general-tgrains"
+   :PROPERTIES:
+   :ID:       A2DF787F-8A56-4C27-A637-257E7B32DE58
+   :END:
 
 this says: 
 control the "centerpos" argument of the "general-tgrains" synth using
@@ -1003,6 +969,9 @@ But needs an event handler to actually respond to cc-messages! see
 #+END_SRC
 
 ** [#B] create event-handlers for general-tgrains
+   :PROPERTIES:
+   :ID:       B9D96AE8-B82E-4C20-BB93-AE27E6232D53
+   :END:
 
 *** define control-change knobs 
 
@@ -1062,6 +1031,7 @@ But needs an event handler to actually respond to cc-messages! see
 * systematically create event-handlers for general-tgrains on channels 1 and 2
 :PROPERTIES:
 :ID:       F51E8E40-9886-45B3-A06F-7C64DAD2FE7A
+:VISIBILITY: children
 :END:
 
 ** uses abstractions defined above--see 'steps'
@@ -1080,6 +1050,7 @@ getting going with goldberg aria
             ::yancey-amp-knob2)
 
   (on-event [:midi :control-change]
+;; um, is this missing a ":place" keyword argument before cc1-2?
             (reset-knob general-tgrains :buffer 1 :centerpos 1 cc1-2 :midi-channel 2 :scale 0.5)
             ::yancey-centerpos-knob1)
 #+END_SRC
