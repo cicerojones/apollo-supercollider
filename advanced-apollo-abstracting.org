@@ -495,6 +495,9 @@ general-trand-synth2 defined below
 (remove-event-handler ::some-var1-synth-name)
 #+END_SRC
 *** first draft macro
+
+Do you really need a macro though? Does this even work? It almost surely is not necessary, but you need to dig deep to understand the problem of when to use macro and when to use just a regular function!
+
 #+BEGIN_SRC clojure :results silent
   (defmacro note-events-from-current-val
     [synth double-colon-name hi-scaling-dest]
