@@ -626,7 +626,11 @@ C-l			;; recenter-top-bottom
 #+RESULTS:
 | Channel-one | KNOBS | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | PADS | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | Channel-two | KNOBS | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | PADS | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
+
 * begin making sound with sound files
+  :PROPERTIES:
+  :header-args: :results silent
+  :END:
 ** note: most of this current (apollo-overtone?) file is now to be archived
 
 see final-tgrain-controller-abstraction.org 
@@ -666,8 +670,6 @@ mono output, should use pan2
                      2)))
 #+END_SRC
 
-#+RESULTS:
-: #<instrument: general-tgrains>
 
 ** add cc control to t-grains (trate with CC, pos with Mouse-x)
 
@@ -685,6 +687,7 @@ examples of centerpos arguments and trate arguments!
 [centerpos-mouse (mouse-x:kr 0 (buf-dur:kr b))]
 [centerpos-line  (line 0 (buf-dur:kr 0) 500) ]
 #+END_SRC
+
 
 * make abstraction for playing with CC and granular synth
 :PROPERTIES:
@@ -820,6 +823,7 @@ Requires slow-grain-reverb to be playing
               ::someother-pooper-do)
 
 #+END_SRC
+
 
 * overtone abstraction templates GOOD
 ** simple CC synth control function--takes any SYNTH as an argument
@@ -1028,6 +1032,7 @@ But needs an event handler to actually respond to cc-messages! see
 #+RESULTS:
 : :handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed
 
+
 * systematically create event-handlers for general-tgrains on channels 1 and 2
 :PROPERTIES:
 :ID:       F51E8E40-9886-45B3-A06F-7C64DAD2FE7A
@@ -1096,6 +1101,8 @@ getting going with goldberg aria
 (remove-event-handler ::yancey-trate-pad7-inc)
 (remove-event-handler ::yancey-trate-pad8-dec)
 #+END_SRC
+
+
 * translate goldberg and yancey to overtone
 ** check loaded buffers for incarnation
 
@@ -1179,7 +1186,7 @@ Basic playback of a loaded buffer
     i = Synth(\goldberg_synth);
 #+END_SRC
 
-** 
+
 * relevant apollo and incarnations soundfiles
 ** directories
 [[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/]]
@@ -1201,6 +1208,7 @@ Basic playback of a loaded buffer
   ~poly = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/polymnie-mono.wav");
   ~terpsichore = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/terpsichore-mono.wav");
 #+END_SRC
+
 
 * consolidate steps into large org blocks for restarts (in progress)
 ** [#B] a start (too large)
