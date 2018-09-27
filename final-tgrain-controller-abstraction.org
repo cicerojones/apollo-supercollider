@@ -1,4 +1,6 @@
 * Misc. notes and tangents on tgrain project
+
+
 ** [#B] (fun!) create JVM timings using Sleeps and future?
 *** process for functioning automated playback fn
 **** choose buffer for playback
@@ -106,11 +108,15 @@ wanting to save values from??
     (reset! current-val 0)
     (my-ctl-line apoth 3000 10))
 #+END_SRC
+
+
 ** preliminaries
 :PROPERTIES:
 :ID:       72B246E0-F6CF-4AC8-8113-C1CE8F83572B
 :END:
 [[id:F50F4B96-20C5-4F82-A29D-88791760D5F5][load all apollo soundfiles into overtone]]
+
+
 ** refactor event handlers!
 *** TODO for refactoring keyboard and CC event-handlers
 - to take synth ugen as argument--must be a macro??
@@ -122,13 +128,19 @@ Saves values of =current-val= for use as =centerpos= arguments
 
 see [[id:D5F733E4-1698-40FB-8B24-D634FD7B39A5][general CC mesages]] above
 
+
 * define synths (taken from =granular-synth-focused.org=)
 :PROPERTIES:
 :ID:       94621238-5BF8-497B-96CE-8E1CB951311A
 :END:
 see below
 [[file:~/Github-repos/post-tonal-overtone/src/post_tonal_overtone/org_files/simplest-org-documentation/granular-synth-focused.org][file:~/Github-repos/post-tonal-overtone/src/post_tonal_overtone/org_files/simplest-org-documentation/granular-synth-focused.org]]
+
+
 ** new general-tgrains-synth
+   :PROPERTIES:
+   :ID:       798DD90A-4F8E-47B9-A884-EAFA1FC8D7B4
+   :END:
 *** definition
 #+BEGIN_SRC clojure :results silent
   (defsynth general-tgrains-synth [buffer 0 trate 1 dur-numerator 8 amp 0.8 centerpos 0]
@@ -139,7 +151,12 @@ see below
       (out 0 (pan2 (t-grains:ar 1 clk buffer 1 centerpos dur 0 amp 2)))))
 #+END_SRC
 *** arguments comprise: buff trate dur-num amp centerpos
+
+
 ** tgrains-line
+   :PROPERTIES:
+   :ID:       1ECD0BBD-2682-4AD4-AE84-C3CB376368AB
+   :END:
 #+BEGIN_SRC clojure :results silent
   (defsynth tgrains-line-synth [buffer 0 trate 1 dur-numerator 8 amp 0.8 centerpos 0 duration-mult 2]
     (out 0 (pan2
@@ -150,18 +167,30 @@ see below
                   centerpos (line:kr centerpos track-len (* duration-mult track-len))  ]
               (t-grains:ar 1 clk buffer 1 centerpos dur 0 amp 2)))))
 #+END_SRC
+
+
 ** slow-grain-reverb
 [[id:F109AE32-4289-4A8B-8637-B68D7B4FA5B6][SLOW-GRAIN-REVERB: dedicated instrument abstraction for t-grains synths]]
 
 from granular-synth focused 
+
+
 ** general-trand synth
 [[id:74504A58-C963-4B11-AEE5-6411D5A37CF4][general-tgrains with t-randomness]]
+
+
 ** some new granular synths in steps.org
  mouse-rand-grain1 and more better below this one!
 [[id:6846EBE5-14EA-4655-8855-1F674FCBAB1D][mouse-rand-grain1]]
+
+
 * load samples with various synths
+
+
 ** load all other apollo samples--see link
 [[id:C99A4AE2-B22E-4F21-88B8-E64B3CC4D6E2][load all apollo soundfiles into overtone]]
+
+
 ** general-tgrains
 #+BEGIN_SRC clojure
 ;; if not already loaded
@@ -181,6 +210,8 @@ from granular-synth focused
 #+BEGIN_SRC clojure :results silent
 (def var1 (general-tgrains-synth 0))
 #+END_SRC
+
+
 ** tgrains-line 
 [[id:326223F4-AA19-4058-A07C-3E5F5DB9AFF5][use lines and scaling and more MIDI buttons]]
 
@@ -223,6 +254,8 @@ from granular-synth focused
 #+BEGIN_SRC clojure :results silent
 (ctl var1-noline :centerpos (line:kr 0 4 20 FREE))
 #+END_SRC
+
+
 ** slow-grain examples
 
 #+BEGIN_SRC clojure :results silent
@@ -232,11 +265,15 @@ from granular-synth focused
 #+BEGIN_SRC clojure :results silent
 (ctl slowg-pasdeux :centerpos 10)
 #+END_SRC
+
+
 * [#B] define refs (for full composing with high-level granular synth)
 :PROPERTIES:
 :ID:       EEC0B1AC-D5F4-40F8-ACDF-629441E38812
 :END:
 These refs are used by...which event handlers???
+
+
 ** all refs in one block
 
 #+BEGIN_SRC clojure :results silent
@@ -257,6 +294,8 @@ These refs are used by...which event handlers???
 ;;; determine dur-numerator for tgrains duration
   (def durnumerator-ref (atom 8))
 #+END_SRC
+
+
 ** break down of refs
 - liked-values :: save =centerpos= values
 - current-val :: holds current =centerpos= value
@@ -265,7 +304,10 @@ These refs are used by...which event handlers???
 - trate-ref :: set rate of trigger of grains
 - durnumerator-ref :: 
 
+
 * [#B] define utility and library functions
+
+
 ** record-val (to 'liked-values' ref); my maprange; round2; read-ugen
 
 #+BEGIN_SRC clojure
@@ -289,6 +331,7 @@ These refs are used by...which event handlers???
 
 #+RESULTS:
 : #'user/record-val#'user/maprange#'user/read-ugen
+
 
 ** design MIDI interface abstractions and original models of event handlers
 *** event handler pad and knob abstractions
@@ -323,6 +366,8 @@ takes:
                     (ctl synth (keyword synth-param) (deref place))
                     (println (str synth-param pad-number " : ") (deref place)))))))
 #+END_SRC
+
+
 ** keyboard keys and transport event handlers, with scaling (hard codes synth!)
 :PROPERTIES:
 :ID:       5B64A0AA-C2B5-468A-A39F-4DC5D3EF55D0
@@ -409,26 +454,42 @@ Problems result from using =case= /but not covering all cases!/
             ::set-durnum-and-play)
 #+END_SRC
 
+
 * [#A] note-on ON-EVENTER (note-on event handler for ANY active synth!)
+
+
 ** some notes on the function
 
 - Should be "note-on-eventer" with more explanation
+
 - hard-codes =current-val= as the "centerpos determiner" value
+
+  - what is "current-val" and where is it defined?
+
+- uses maprange instead of scale-range
+
 - hard-codes =dst-hi= for the maprange hi
+
   - should make some use of buffer-duration??
+
   - where are these refs set?
     - [[id:EEC0B1AC-D5F4-40F8-ACDF-629441E38812][define refs (for full composing with high-level granular synth)]]
   - where are the controls for =dst-hi= exactly?
     - event-handler ::test-range-high
       - [[id:5B64A0AA-C2B5-468A-A39F-4DC5D3EF55D0][keyboard keys and transport event handlers, with scaling (hard codes synth!)]]
+
 - raises errors when the synth it is defined for is "inactive"?
   - must manually remove event handler in that case?
   - or is this a problem from somewhere else?
+
 - octave of keyboard must be appropriately set!
 
+
 ** function definition
-#+BEGIN_SRC clojure :results silent
+
+#+begin_src clojure :results silent
 ;; determine "centerpos" based on MIDI keyboard notes
+
 
 (defn note-on-eventer [active-synth handler-double-colon-name]
   (on-event [:midi :note-on]
@@ -441,7 +502,8 @@ Problems result from using =case= /but not covering all cases!/
 
 
 
-#+END_SRC
+#+end_src
+
 
 ** instantiate general-tgrains for note-on-eventer control
 Step 1. Must activate a synth
@@ -464,7 +526,10 @@ Step 2. Begin to control with with the note-on-eventer
 (remove-event-handler ::no-liner)
 #+END_SRC
 
+
 * [#A] cc-change ON-EVENTER
+
+
 ** prepare to define function 
    :PROPERTIES:
    :ID:       254BF7C9-931F-4E30-AEC6-05990B46BE41
@@ -484,6 +549,7 @@ Needs an active-synth! (That is making use of that ref's value?)
               double-colon-name))
 #+END_SRC
 
+
 ** create and remove handler
 #+BEGIN_SRC clojure :results silent
 (cc-on-eventer dst-hi 3 ::dst-hi-change)
@@ -492,6 +558,7 @@ Needs an active-synth! (That is making use of that ref's value?)
 #+BEGIN_SRC clojure :results silent
 (remove-event-handler ::dst-hi-change)
 #+END_SRC
+
 
 ** control trate with cc-on-eventer
 By hard coding range values, it suggests you are building in a
@@ -518,6 +585,7 @@ specific use for this event-handler!
 (remove-event-handler ::var1-trate-change)
 #+END_SRC
 
+
 * more general CC handler with defmacro
   :PROPERTIES:
   :ID:       18034CBE-5093-4083-8D7A-5E7027482FA4
@@ -543,7 +611,12 @@ specific use for this event-handler!
 #+BEGIN_SRC clojure :results silent
 (remove-event-handler ::more-general-trate-scaled)
 #+END_SRC
+
+
 ** model definitions for refactoring as more abstract
+   :PROPERTIES:
+   :ID:       DF0D2884-AC37-42E4-8FF1-9DA603FABEF8
+   :END:
 #+BEGIN_SRC clojure :results silent
   (defn cc-param-on-eventer1 [active-synth knob-num double-colon-name]
     (on-event [:midi :control-change]

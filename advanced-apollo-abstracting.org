@@ -1,5 +1,9 @@
-* [#C] Apollo-overtone: [[id:DFFB3F5A-370C-4D2A-BA61-685E4B73CCAC][Apollo-overtone restart essentials]]
+* Apollo-overtone restart
+
 ** stop all sound
+Do not rely on apollo-overtone.org!
+
+[[id:DFFB3F5A-370C-4D2A-BA61-685E4B73CCAC][Apollo-overtone restart essentials]]
 
 #+BEGIN_SRC clojure
 (stop)
@@ -7,7 +11,10 @@
 
 #+RESULTS:
 : nil
+
+
 * unified, systematized goldberg and yancey interface (as model)
+
 ** [#C] define general-tgrains-synth (buffer trate dur-numerator amp centerpos)
    :PROPERTIES:
    :ID:       450B0F1E-9F1E-4B29-8D39-04C012FCF44D
@@ -27,6 +34,7 @@ MONO! (use =pan2=)
 (general-tgrains-synth 0)
 #+END_SRC
 
+
 ** define two vars for playing two buffers with general-tgrains-synth
 #+BEGIN_SRC clojure :results silent
 (def gold (general-tgrains-synth 0))
@@ -40,6 +48,7 @@ MONO! (use =pan2=)
 #+BEGIN_SRC clojure
 (ctl yanc :centerpos 40)
 #+END_SRC
+
 
 ** define knob and pad changes with more sophisticated passing
 :PROPERTIES:
@@ -65,6 +74,7 @@ MONO! (use =pan2=)
                     (println (str synth-param pad-number " : ") (deref place)))))))
 #+END_SRC
 
+
 ** Set four knobs for amp and centerpos across goldberg and yancey
 :PROPERTIES:
 :ID:       B859EFB9-72F9-405E-9E1F-A0BF75022781
@@ -86,6 +96,7 @@ MONO! (use =pan2=)
             (old-reset-knob yanc :centerpos 5 cc6-1 1 :scale 0.5)
             ::old-centerpos-knob1-yanc)
 #+END_SRC
+
 
 ** set eight pads for "inc/dec" of centerpos and dur-numerator
 
@@ -123,7 +134,9 @@ MONO! (use =pan2=)
             ::gold-durnumerator-pad6-dec)
 #+END_SRC
 
+
 * use refs for setting values of synth parameters
+
 ** trigger start position from keyboard
 
 #+BEGIN_SRC clojure :results silent
@@ -158,6 +171,7 @@ MONO! (use =pan2=)
 (remove-event-handler ::set-current-val-scale-and-play)
 #+END_SRC
 
+
 ** [#A] set 'dst-hi' ref from cc-2
 #+BEGIN_SRC clojure :results silent
   (on-event [:midi :control-change]
@@ -171,6 +185,7 @@ MONO! (use =pan2=)
 #+BEGIN_SRC clojure :results silent
 (remove-event-handler ::test-range-high)
 #+END_SRC
+
 
 ** use cc-3 to set 'trate-ref' (with goldberg)
 #+BEGIN_SRC clojure :results silent
@@ -187,6 +202,7 @@ MONO! (use =pan2=)
 (ctl gold :trate 0.5)
 #+END_SRC
 
+
 ** use cc-4 to set 'durnumerator'
 #+BEGIN_SRC clojure :results silent
 (ctl gold :dur-numerator 12)
@@ -202,8 +218,13 @@ MONO! (use =pan2=)
             ::set-durnum-and-play)
 #+END_SRC
 
+
 * other homemade granular synths (line synths)
+
 ** [#B] use lines and scaling and more MIDI buttons
+   :PROPERTIES:
+   :ID:       704D472E-0686-45A9-9DE9-2163DB7E3E26
+   :END:
 #+BEGIN_SRC clojure :results silent
 (def gold (general-tgrains-synth :buffer 0 :centerpos (line:kr 0.0 100 30)))
 #+END_SRC
@@ -243,7 +264,12 @@ Plays almost exactly like regular track depending on the "mult"
 
 #+RESULTS:
 : #'user/yanc-line
+
+
 ** [#B] more complicated granular synth playack (use 't-rand')
+   :PROPERTIES:
+   :ID:       EB3783C6-E9EC-4838-BB28-7641CDBE1086
+   :END:
 #+BEGIN_SRC clojure
   (defsynth general-trand-synth
     "stochastic granular synthesis abstraction (in stereo!)"
@@ -284,6 +310,8 @@ general-trand-synth2 defined below
 
 #+RESULTS:
 : #'user/gold-rand#'user/yanc-rand
+
+
 ** control randomized granular synths with four knobs and eight pads
 #+BEGIN_SRC clojure
   (on-event [:midi :control-change]
@@ -353,7 +381,12 @@ general-trand-synth2 defined below
 (remove-event-handler ::yancey-trate-pad7-inc)
 (remove-event-handler ::yancey-trate-pad8-dec)
 #+END_SRC
+
+
 ** [#B] granular synth uses t-rands + impulse throughout
+   :PROPERTIES:
+   :ID:       7D9FF3B8-40E3-4D15-8727-F5893524EF03
+   :END:
 #+BEGIN_SRC clojure
   (defsynth general-trand-synth2
     "stochastic granular synthesis abstraction (in stereo!)"
@@ -378,7 +411,9 @@ general-trand-synth2 defined below
 #+RESULTS:
 : #<synth: general-trand-synth2>
 
+
 * misc. project utilities
+
 ** remove some event handlers for yancey and goldberg 
 #+BEGIN_SRC clojure
 (remove-event-handler ::old-amp-knob2-yanc)
@@ -401,8 +436,13 @@ general-trand-synth2 defined below
 #+RESULTS:
 : :handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed:handler-removed
 
+
 * translated from sc granular examples
+
 ** uses dust
+   :PROPERTIES:
+   :ID:       674DA4F5-F185-4D5C-A677-5F802B6705DB
+   :END:
 #+BEGIN_SRC clojure :results silent
   (defsynth dust-gran-synth
     "granular synth using dust for 'clk' and based on sc docs"
@@ -443,26 +483,33 @@ general-trand-synth2 defined below
 
 #+END_SRC
 
+
 * develop abstraction for controlling parameters of any granular synth
   :PROPERTIES:
   :ID:       C9CED1FB-43C5-4DBD-836E-78980A17AC02
   :VISIBILITY: content
   :END:
+
 ** required functions
 [[id:BCB30277-2E56-44FB-A36F-F985A0473C9B][define knob and pad changes with more sophisticated passing]]
+
 
 ** required event-handler templates
 [[id:B859EFB9-72F9-405E-9E1F-A0BF75022781][Set four knobs for amp and centerpos across goldberg and yancey]]
 
+
 ** examples of required atoms
 [[id:B3DB9C3B-4F2B-40D4-B16C-DF3047C968D9][define 32 atoms for two sets of channels and CC messages]]
+
 
 ** general overview of steps
 
 [[id:EEEBABF7-6A2A-4B1A-9D57-D1C8E0D42E72][make abstraction for playing with CC and granular synth]]
 
+
 ** finally, see dedicated file
 [[file:final-tgrain-controller-abstraction.org][file:~/Github-repos/apollo-supercollider/final-tgrain-controller-abstraction.org]]
+
 
 ** create macro for event-handlers
 
@@ -480,6 +527,7 @@ general-trand-synth2 defined below
             ::record-value-handler)
 #+END_SRC
 
+
 *** actual event handler for template
 #+BEGIN_SRC clojure :results silent
 (on-event [:midi :note-on]
@@ -494,6 +542,8 @@ general-trand-synth2 defined below
 #+BEGIN_SRC clojure :results silent
 (remove-event-handler ::some-var1-synth-name)
 #+END_SRC
+
+
 *** first draft macro
 
 Do you really need a macro though? Does this even work? It almost surely is not necessary, but you need to dig deep to understand the problem of when to use macro and when to use just a regular function!

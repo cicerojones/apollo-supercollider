@@ -1,8 +1,12 @@
+* DEPRECATE?
+
+
 * Apollo-overtone restart essentials
 :PROPERTIES:
 :ID:       DFFB3F5A-370C-4D2A-BA61-685E4B73CCAC
 :VISIBILITY: content
 :END:
+
 ** stop all sound
 
 #+BEGIN_SRC clojure
@@ -11,6 +15,8 @@
 
 #+RESULTS:
 : nil
+
+
 ** record all sound
 #+BEGIN_SRC clojure :results silent
 (recording-start "~/Desktop/goldberg-2016-1.wav")
@@ -31,6 +37,8 @@
 #+BEGIN_SRC clojure :results silent
 (recording-stop)
 #+END_SRC
+
+
 ** use overtone.core, connect to external
 
 #+BEGIN_SRC clojure :results silent
@@ -50,14 +58,17 @@
 (use 'overtone.live)
 #+END_SRC
 
+
 ** loaded buffers (with overview notes)
 :PROPERTIES:
 :ID:       19C65970-C333-4D09-AD7B-31C158D9C120
 :END:
+
 *** load all apollo soundfiles into overtone
 :PROPERTIES:
 :ID:       C99A4AE2-B22E-4F21-88B8-E64B3CC4D6E2
 :END:
+
 **** preferred sequence for loading apollo and other incarnation samples
 :PROPERTIES:
 :ID:       62220D41-AE0A-4D5F-B2D6-6B100610A89B
@@ -89,6 +100,8 @@
 
 #+RESULTS:
 : #'user/variation1#'user/variation2#'user/apotheose#'user/calliope#'user/coda#'user/yancey#'user/naissance#'user/pas-daction#'user/pas-deux#'user/polymnie#'user/terpsichore#'user/goldberg-slow#'user/irma
+
+
 **** load single buffers
 #+BEGIN_SRC clojure :results silent
 (def variation1 (load-sample (str path-to-mono "apollo-variation1-mono.wav")))
@@ -104,6 +117,7 @@
 #+END_SRC
 
 #+RESULTS:
+
 
 **** shorthand buffer mnemonics
 Where should we put Goldberg?
@@ -122,6 +136,7 @@ Where should we put Goldberg?
 12. 
 13. 
 14. 
+
 
 *** basic loading and playback                                :play:buffer:
 
@@ -195,6 +210,7 @@ Where should we put Goldberg?
 
 #+END_SRC
 
+
 *** various buffer infos
 
 **** buffer id
@@ -216,6 +232,7 @@ Where should we put Goldberg?
 
 #+RESULTS:
 : 123456789101112
+
 
 **** [#A] full info
 #+BEGIN_SRC clojure :results output
@@ -394,6 +411,7 @@ Where should we put Goldberg?
 
 #+end_example
 
+
 **** basic buffer-info                                       :buffer:info:
 #+BEGIN_SRC clojure :results output
   (for [name [variation1 variation2 apotheose calliope coda yancey naissance pas-daction pas-deux polymnie terpsichore goldberg-slow irma]]
@@ -534,6 +552,7 @@ Where should we put Goldberg?
 
 #+end_example
 
+
 **** buffer-size
 #+BEGIN_SRC clojure
 (buffer-size variation1)
@@ -550,14 +569,20 @@ Where should we put Goldberg?
 
 #+END_SRC
 
+
+
 *** irma thomas
 
 #+BEGIN_SRC clojure :results silent
 (def irma (load-sample "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/full-time-mono.wav"))
 #+END_SRC
 
+
 *** link to sample directories
 [[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/]]
+
+
+
 ** keyboard macro to stop sound
 :PROPERTIES:
 :ID:       94F9064E-DB8E-4897-A6C2-94467527BAED
@@ -589,7 +614,8 @@ C-l			;; recenter-top-bottom
 
 #+END_SRC
 
-** [#A] confirm MIDI controller connected
+
+** confirm MIDI controller connected
 
 #+BEGIN_SRC clojure :results silent
 (midi-connected-devices)
@@ -603,10 +629,15 @@ C-l			;; recenter-top-bottom
 (event-debug-off)
 #+END_SRC
 
-** [#B] define 32 atoms for two sets of channels and CC messages
+
+** define 32 atoms for two sets of channels and CC messages
 :PROPERTIES:
 :ID:       B3DB9C3B-4F2B-40D4-B16C-DF3047C968D9
 :END:
+
+MOVED?? To acatalectic?
+
+[[id:F14EC44C-04DE-4611-B8C0-9D5355536765][control channel atoms aplenty, with accompanying ~on-event~]]
 
 
 ** monitor current state of refs
@@ -631,14 +662,19 @@ C-l			;; recenter-top-bottom
   :PROPERTIES:
   :header-args: :results silent
   :END:
+
 ** note: most of this current (apollo-overtone?) file is now to be archived
 
 see final-tgrain-controller-abstraction.org 
-[[id:72B246E0-F6CF-4AC8-8113-C1CE8F83572B][preliminaries]] this is really just loading apollo soundfiles as
-(probably already) done above. Move on to synthdefs below
+
+[[id:72B246E0-F6CF-4AC8-8113-C1CE8F83572B][preliminaries]] this is really just loading apollo soundfiles as (probably already) done above. 
+
+Move on to synthdefs below.
 
 And consider closing this file? Useful at least to refer back to
 buffer info
+
+
 ** consider what synths to use
 [[id:94621238-5BF8-497B-96CE-8E1CB951311A][define synths (taken from =granular-synth-focused.org=)]]
 
@@ -647,6 +683,7 @@ buffer info
 - tgrains-line-synth ::
 - slow-grain-reverb ::
 - general-trand-synth- :: 
+
 
 ** def an instrument for playing with parameters to TGrains
 :PROPERTIES:
@@ -659,15 +696,7 @@ mono output, should use pan2
             dur (/ dur-numerator trate)
             clk (impulse:ar trate)
             centerpos centerpos]
-        (t-grains:ar 1
-                     clk
-                     buffer
-                     1
-                     centerpos
-                     dur
-                     0
-                     amp
-                     2)))
+        (t-grains:ar 1 clk buffer 1 centerpos dur 0 amp 2)))
 #+END_SRC
 
 
@@ -694,9 +723,12 @@ examples of centerpos arguments and trate arguments!
 :ID:       EEEBABF7-6A2A-4B1A-9D57-D1C8E0D42E72
 :VISIBILITY: content
 :END:
+
 ** preliminaries
 - define atoms for two sets of channels and CC messages (see 'restart'
   section above)
+
+
 ** Confirm current channel number
 #+BEGIN_SRC clojure :results silent
   (on-event [:midi :control-change]
@@ -709,6 +741,7 @@ examples of centerpos arguments and trate arguments!
 #+BEGIN_SRC clojure :results silent
 (remove-event-handler ::cc-state-if)
 #+END_SRC
+
 
 ** [#A] build large event handler (using "on-event")
 *** hide largest on-event template (respond to CC on channel 1 or other)
@@ -826,6 +859,7 @@ Requires slow-grain-reverb to be playing
 
 
 * overtone abstraction templates GOOD
+
 ** simple CC synth control function--takes any SYNTH as an argument
 - sequence of 
 #+BEGIN_SRC clojure :results silent
@@ -850,8 +884,11 @@ Requires slow-grain-reverb to be playing
 #+RESULTS:
 : :handler-removed
 
+
 ** simple TGrains variations function--use general-tgrains above
     args to general-tgrains [buffer 0 trate 1 dur-numerator 8 amp 0.8 centerpos 0]
+
+
 ** customize CC synth control for exacting centerpos work
 #+BEGIN_SRC clojure :results silent
 ;; copied from above
@@ -896,6 +933,8 @@ Requires slow-grain-reverb to be playing
 (ctl general-tgrains :centerpos 1)
 #+END_SRC
 
+
+
 ** full knob and pad abstraction
 :PROPERTIES:
 :ID:       C945047A-E0FD-439C-9354-6F8CA4989DAE
@@ -931,6 +970,7 @@ Requires slow-grain-reverb to be playing
 #+RESULTS:
 : #'user/swap-pad
 
+
 ** play goldberg with general-tgrains granular synth
 :PROPERTIES:
 :ID:       AD3B833A-363B-410D-A18E-348F8D7D4182
@@ -939,6 +979,7 @@ Requires slow-grain-reverb to be playing
 (general-tgrains 0)
 #+END_SRC
 
+
 ** play yancey
 :PROPERTIES:
 :ID:       44B87F5F-FCA4-4451-A91C-A2DCD2F9F714
@@ -946,6 +987,8 @@ Requires slow-grain-reverb to be playing
 #+BEGIN_SRC clojure :results silent
 (general-tgrains 1)
 #+END_SRC
+
+
 
 ** [#C] use "reset-knob" and "swap-pad" to control "general-tgrains"
    :PROPERTIES:
@@ -971,6 +1014,8 @@ But needs an event handler to actually respond to cc-messages! see
 (swap-pad general-tgrains :centerpos 36 pad1-1 inc 1)
 (swap-pad general-tgrains :centerpos 37 pad2-1 dec 1)
 #+END_SRC
+
+
 
 ** [#B] create event-handlers for general-tgrains
    :PROPERTIES:
@@ -1044,6 +1089,8 @@ see some steps node somewhere (in more-advanced-overtone-exploring.org)
 
 lays out a process of
 getting going with goldberg aria
+
+
 ** define control-change knobs for goldberg and Channel 1
 :PROPERTIES:
 :ID:       23951DB5-0EEC-4CB4-B949-C728F4CF2A2D
@@ -1062,6 +1109,7 @@ getting going with goldberg aria
 
 #+RESULTS:
 : :added-async-handler
+
 
 ** define pads
 #+BEGIN_SRC clojure :results silent
@@ -1090,6 +1138,7 @@ getting going with goldberg aria
             ::yancey-trate-pad8-dec)
 #+END_SRC
 
+
 ** remove event handlers for goldberg
 #+BEGIN_SRC clojure
 (remove-event-handler ::yancey-amp-knob2)
@@ -1104,6 +1153,7 @@ getting going with goldberg aria
 
 
 * translate goldberg and yancey to overtone
+
 ** check loaded buffers for incarnation
 
 [[id:19C65970-C333-4D09-AD7B-31C158D9C120][make sure buffer was loaded]] as above
@@ -1137,6 +1187,7 @@ Basic playback of a loaded buffer
 
 #+RESULTS:
 : #<buffer-info: 272.938163s mono 1>
+
 
 ** supercollider yancey and goldberg synth version
 #+BEGIN_SRC sclang
@@ -1188,10 +1239,12 @@ Basic playback of a loaded buffer
 
 
 * relevant apollo and incarnations soundfiles
+
 ** directories
 [[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/]]
 [[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/all-mono/]]
 [[file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/apollo-tracks/][file:/Applications/SuperCollider/SuperCollider.app/Contents/Resources/sounds/apollo-tracks/]]
+
 ** supercollider Buffer.read en masse
 #+BEGIN_SRC sclang
   ~variation1 = Buffer.read(s, Platform.resourceDir +/+ "sounds/all-mono/apollo-variation1-mono.wav");
@@ -1211,6 +1264,7 @@ Basic playback of a loaded buffer
 
 
 * consolidate steps into large org blocks for restarts (in progress)
+
 ** [#B] a start (too large)
 
 #+BEGIN_SRC clojure
@@ -1339,6 +1393,7 @@ Basic playback of a loaded buffer
 
 #+RESULTS:
 : ({:description "Axiom A.I.R. Mini32 MIDI", :vendor "M-Audio", :sinks 0, :sources 2147483647, :name "MIDI", :overtone.studio.midi/full-device-key [:midi-device "M-Audio" "MIDI" "Axiom A.I.R. Mini32 MIDI" 0], :info #object[com.sun.media.sound.MidiInDeviceProvider$MidiInDeviceInfo 0x5386ff43 "MIDI"], :overtone.studio.midi/dev-num 0, :device #object[com.sun.media.sound.MidiInDevice 0x7bf18b15 "com.sun.media.sound.MidiInDevice@7bf18b15"], :version "Unknown version"} {:description "Axiom A.I.R. Mini32 HyperControl", :vendor "M-Audio", :sinks 0, :sources 2147483647, :name "HyperControl", :overtone.studio.midi/full-device-key [:midi-device "M-Audio" "HyperControl" "Axiom A.I.R. Mini32 HyperControl" 0], :info #object[com.sun.media.sound.MidiInDeviceProvider$MidiInDeviceInfo 0x77743fc8 "HyperControl"], :overtone.studio.midi/dev-num 0, :device #object[com.sun.media.sound.MidiInDevice 0x68bfe7ec "com.sun.media.sound.MidiInDevice@68bfe7ec"], :version "Unknown version"})#'user/goldberg-slow#'user/yancey#<instrument: general-tgrains>#'user/cc1-1#'user/cc2-1#'user/cc3-1#'user/cc4-1#'user/cc5-1#'user/cc6-1#'user/cc7-1#'user/cc8-1#'user/cc1-2#'user/cc2-2#'user/cc3-2#'user/cc4-2#'user/cc5-2#'user/cc6-2#'user/cc7-2#'user/cc8-2#'user/pad1-1#'user/pad2-1#'user/pad3-1#'user/pad4-1#'user/pad5-1#'user/pad6-1#'user/pad7-1#'user/pad8-1#'user/pad1-2#'user/pad2-2#'user/pad3-2#'user/pad4-2#'user/pad5-2#'user/pad6-2#'user/pad7-2#'user/pad8-2#'user/reset-knob#'user/swap-pad:added-async-handler:added-async-handler:added-async-handler:added-async-handler
+
 ** [#C] use two different channels for modifying the two different synths
 
 buffers "gold" and "yanc" are associated with two synths, and play
