@@ -995,6 +995,10 @@ Requires slow-grain-reverb to be playing
    :ID:       A2DF787F-8A56-4C27-A637-257E7B32DE58
    :END:
 
+
+WHAT IF GENERAL-TGRAINS is /not running?/
+
+
 this says: 
 control the "centerpos" argument of the "general-tgrains" synth using
 "knob 1" (which uses the "cc1-1" var to hold its current state) when

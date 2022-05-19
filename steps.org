@@ -23,6 +23,7 @@ Use links to commonly recurring chunks of text and then add in
 anything you've liked in the cider-scratch buffer
 
 This takes some discipline!
+
 *** some recent work: final-tgrain-controller-abstraction [2017-01-24 Tue]
 - use Thread/sleep to acheive primitive timing functionality
   - sleeping, however, blocks access to the repl, which means calling
@@ -39,6 +40,7 @@ What are the best current org files for doing Incarnation work?
 
 Documentation of Overtone:
 [[file:~/Github-repos/post-tonal-overtone/src/post_tonal_overtone/org_files/simplest-org-documentation/][file:~/Github-repos/post-tonal-overtone/src/post_tonal_overtone/org_files/simplest-org-documentation/]]
+
 ** copy code blocks to registers and load kmacros
 [[id:94F9064E-DB8E-4897-A6C2-94467527BAED][keyboard macro to stop sound]]
 
@@ -965,6 +967,7 @@ Look at overtone examples
 eight parameters for Axiom target ranges
 You can set the values for high and low based on the desired ranges
 you need for a given ugen that will scale within these ranges
+
 **** def atoms
 #+BEGIN_SRC clojure :results silent
 (def cc0-1-lo (atom 100))
@@ -1007,6 +1010,7 @@ you need for a given ugen that will scale within these ranges
 #+BEGIN_SRC clojure :results silent
 (def rb (ring-bank))
 #+END_SRC
+
 **** ctl ring-bank instance
 #+BEGIN_SRC clojure :results silent
 (ctl rb :cc0-1 330)
@@ -1020,6 +1024,7 @@ you need for a given ugen that will scale within these ranges
 (ctl rb :cc0-3 0.2)
 #+END_SRC
 **** create instance of eventer-handler for ring-bank
+
 #+BEGIN_SRC clojure :results silent
 (cc-active-synth-abstraction rb ::rb-handler)
 ;; (def handler1 (cc-rate-active-synth-abstraction rb))
